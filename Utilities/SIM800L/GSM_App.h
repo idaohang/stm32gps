@@ -33,6 +33,10 @@ typedef struct
 	unsigned char BatPower;		  //µÁ≥ÿµÁ¡ø£¨0-100
 }ST_BATTERYSTATUS, *pST_BATTERYSTATUS;
 
+typedef struct
+{
+  char IMEI[15];
+}ST_GSNIMEI, *pST_GSNIMEI;
 
 
 extern unsigned char GSMSinal;			 
@@ -41,13 +45,14 @@ extern volatile unsigned	int RingCount;
 extern volatile unsigned char CallingRing;
 extern volatile unsigned char SMSingRing;
 
-char *strnchr(char *S, int C, int n);
 unsigned char GSM_ChkRingSta(void);
 void GSM_PowerOnOff(void);
+void GSM_PowerOn(void);
+void GSM_PowerOff(void);
 void GSM_ClearBuffer(void);
 unsigned char GSM_SendAT(char *pCMD, char *pCMDBack, uint32_t CMDLen);
 unsigned char GSM_SendAT_rsp(char *pCMD, char *pCMDBack,
-        uint32_t CMDLen, char **ppRecvBuf, uint32_t *pRecvLen);
+        					uint32_t CMDLen, char **ppRecvBuf, uint32_t *pRecvLen);
 unsigned char GSM_QueryNetType(void);
 unsigned char GSM_QuerySignal(unsigned char *pSig);
 unsigned char GSM_CallNumber(char *pNumber);

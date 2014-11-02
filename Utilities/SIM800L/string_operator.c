@@ -107,3 +107,25 @@ char *strnchr_len(char *S, int C, uint32_t n, uint32_t len)
     return pnchr;
 }
 
+// big edian
+uint8_t VariableToArray(uint16_t val, uint8_t *str)
+{
+	uint8_t i;
+	uint8_t size = 2;
+	uint8_t *pVal = (uint8_t *)&val;
+#ifdef LITTLE_ENDIAN_MACRO
+	for (i=0U; i<size; i++)
+	{
+		*(str + i) = *pVal;
+		pVal++;
+	}
+#else
+	for (=0U; i<size; i++)
+	{
+		*(str + size - 1 - i) = *pVal;
+		pVal++;
+	}
+#endif
+	return size;
+}
+

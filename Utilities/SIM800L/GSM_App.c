@@ -44,6 +44,10 @@ pST_GSMCMD pGSM_msg;
 extern volatile ST_RTCTIME CurSysTime;
 unsigned char GSMNetType;
 
+///////////////////////function declearation ///////////////////////
+static void GSM_simcard_Init(void);
+static unsigned char GSM_SendAT(char *pCMD, char *pCMDBack, uint32_t CMDLen);
+
 
 /*********************************************************************************************************
  ** Function name:       GSM_RingPinInit()
@@ -93,24 +97,6 @@ unsigned char GSM_ChkRingSta(void)
     return 0;
 }
 
-/*********************************************************************************************************
- ** Function name:       GSM_PowerCtrlInit()
- ** Descriptions:        启动控制IO初始化
- ** input parameters:    NONE
- ** output parameters:   NONE
- ** Returned value:
- *********************************************************************************************************/
-void GSM_PowerCtrlInit(void)
-{
-    GPIO_InitTypeDef GPIO_InitStructure;
-
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-    GPIO_Init(GPIOC, &GPIO_InitStructure);
-}
 
 /*********************************************************************************************************
  ** Function name:       GSM_PowerOnOff()
@@ -121,10 +107,58 @@ void GSM_PowerCtrlInit(void)
  *********************************************************************************************************/
 void GSM_PowerOnOff(void)
 {
-    GPIO_ResetBits(GPIOC, GPIO_Pin_10);
+    GPIO_ResetBits(GPIOC, GPIO_Pin_12);
     delay_ms(3000);
-    GPIO_SetBits(GPIOC, GPIO_Pin_10);
+    GPIO_SetBits(GPIOC, GPIO_Pin_12);
     delay_ms(3000);
+}
+
+/** \brief 开启模块
+ *
+ * 通过拉低PWRKEY并保持至少1秒，然后释放，可以开启模块
+ * 同样，通过拉低PWRKEY并保持至少1秒，然后释放，可以关闭模块
+ *
+ *  \param void
+ *  \retval void
+ */
+void GSM_PowerOn(void)
+{
+	if(SET == GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_11))
+	{
+		printf("GPRS(SIM800L) have Turned On\n");
+	}
+	else
+	{
+		printf("GPRS(SIM800L) is Turning On...\n");
+		GPIO_ResetBits(GPIOA, GPIO_Pin_12);
+		delay_ms(2000);
+		GPIO_SetBits(GPIOA, GPIO_Pin_12);;	
+		delay_ms(5000);
+	}
+}
+
+/** \brief 开启模块
+ *
+ * 通过拉低PWRKEY并保持至少1秒，然后释放，可以开启模块
+ * 同样，通过拉低PWRKEY并保持至少1秒，然后释放，可以关闭模块
+ *
+ *  \param void
+ *  \retval void
+ */
+void GSM_PowerOff(void)
+{
+	if(RESET == GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_11))
+	{
+		printf("GPRS(SIM800L) have Turned Off\n");
+	}
+	else
+	{
+		printf("GPRS(SIM800L) is Turning Off...\n");
+		GPIO_ResetBits(GPIOA, GPIO_Pin_12);
+		delay_ms(2000);
+		GPIO_SetBits(GPIOA, GPIO_Pin_12);;	
+		delay_ms(3000);
+	}
 }
 
 /*********************************************************************************************************
@@ -148,7 +182,7 @@ void GSM_ClearBuffer(void)
  ** Returned value:      发送指令返回状态
  *********************************************************************************************************/
 #define DBG_GSM_SendAT
-unsigned char GSM_SendAT(char *pCMD, char *pCMDBack, uint32_t CMDLen)
+static unsigned char GSM_SendAT(char *pCMD, char *pCMDBack, uint32_t CMDLen)
 {
     unsigned char i = AT_RESEND_TIMES;
     unsigned int len;
@@ -487,15 +521,15 @@ unsigned char GSM_SendSMS(char *pNumb, char *pSMS, unsigned char type)
  ** output parameters:   NONE
  ** Returned value:      NONE
  *********************************************************************************************************/
-void GSM_simcard_Init(void)
+static void GSM_simcard_Init(void)
 {
     uint32_t i;
     uint32_t len;
 
-    //查询卡状态
+    //查询卡状态，是否插入
     i = 0;
     len = sizeof(AT_CPIN) - 1;
-    while (USART_SUCESS != GSM_SendAT((char *) AT_CPIN, (char *) "READY", len))
+    while (USART_SUCESS != GSM_SendAT((char *) AT_CPIN, (char *) AT_READY, len))
     {
         delay_ms(100);
         i++;
@@ -537,7 +571,6 @@ void GSM_Init(void)
     unsigned char i = 0;
     unsigned char len;
 
-    GSM_PowerCtrlInit();
     GSM_RingPinInit();
 //	GSM_PowerOnOff();											
 
@@ -554,14 +587,12 @@ void GSM_Init(void)
             i = 0;
         }
     }
-    printf("AT DONE\r\n");
 
     //关闭回显
     len = sizeof(ATE0_Cmd) - 1;
     GSM_SendAT((char *) ATE0_Cmd, (char *) AT_OK, sizeof(ATE0_Cmd));
 
     GSM_simcard_Init();
-    //GPS_Init();
 }
 /*********************************************************************************************************
  ** Function name:       GSM_CallNumber
@@ -803,6 +834,29 @@ unsigned char GSM_SetRTCTime(ST_RTCTIME rtctime)
 
     return USART_FAIL;
 }
+
+/*********************************************************************************************************
+ ** Function name:       GSM_GetIMEI
+ ** Descriptions:        查询IMEI
+ ** input parameters:    NONE
+ ** output parameters:   NONE
+ ** Returned value:      返回状态结果
+ *********************************************************************************************************/
+unsigned char GSM_GetIMEI(pST_GSNIMEI imei)
+{
+    unsigned int cmdLen;
+    //static char *pfeed = NULL;
+
+    cmdLen = strlen(AT_GSN);
+    GSM_ClearBuffer();
+    if (USART_SUCESS == GSM_SendAT((char *) AT_GSN, (char *) AT_OK, cmdLen))
+    {
+        strncpy(imei.IMEI, BackBuf, 15);
+        return USART_SUCESS;
+    }
+    return USART_FAIL;
+}
+
 /*********************************************************************************************************
  ** Function name:       GPRS_Init
  ** Descriptions:      	GPRS初始化
@@ -1233,7 +1287,7 @@ void GSM_test_once(void)
 	str[15] = 0x00;
 	str[16] = 0x20;
 
-	  sprintf(stNetCfg.TransferMode, "%s", "TCP");
+	sprintf(stNetCfg.TransferMode, "%s", "TCP");
     sprintf(stNetCfg.RemoteIP, "%s", "121.40.200.84");
     sprintf(stNetCfg.RemotePort, "6666");
     //while (USART_SUCESS != GSM_CallNumber((char*)Test_TelNumber));

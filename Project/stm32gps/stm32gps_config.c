@@ -31,22 +31,27 @@ void SysTick_Configuration(void)
   */
 void GPIO_Configuration(void)
 {
-  GPIO_InitTypeDef GPIO_InitStructure;
+  GPIO_InitTypeDef GPIO_InitStruct;
 
 #ifdef USE_STM32_GPS_BOARD_VA
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
 
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-    GPIO_Init(GPIOC, &GPIO_InitStructure);
+    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_10;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_Init(GPIOC, &GPIO_InitStruct);
 #elif defined USE_STM32_GPS_BOARD_VB
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_12;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+	/*Configure GPIO pin : PA */
+  GPIO_InitStruct.GPIO_Pin = GPIO_Pin_11;
+  GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPD;
+  GPIO_Init(GPIOA, &GPIO_InitStruct);
 #endif
 }
 

@@ -27,45 +27,26 @@
 #include "GSM_App.h"
 #include "GPS_App.h"
 
-/*----------------------------------------------*
- * external variables                           *
- *----------------------------------------------*/
-
-/*----------------------------------------------*
- * external routine prototypes                  *
- *----------------------------------------------*/
-
-/*----------------------------------------------*
- * internal routine prototypes                  *
- *----------------------------------------------*/
-
-/*----------------------------------------------*
- * project-wide global variables                *
- *----------------------------------------------*/
-
-/*----------------------------------------------*
- * module-wide global variables                 *
- *----------------------------------------------*/
-
-/*----------------------------------------------*
- * constants                                    *
- *----------------------------------------------*/
-
-/*----------------------------------------------*
- * macros                                       *
- *----------------------------------------------*/
-
-/*----------------------------------------------*
- * routines' implementations                    *
- *----------------------------------------------*/
 
 /* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
 
+typedef struct
+{
+  unsigned char header[2];
+  unsigned char protocol;
+  unsigned char length[2];
+  unsigned char serial[2];
+  unsigned char content[128];
+}ST_EELINK_MSG, *pST_EELINK_MSG;
+
+/* Private define ------------------------------------------------------------*/
+#define EELINK_HEADER     0x67
+#define EELINK_LOGINLIN   0x01
+#define EELINK_GPS        0x02
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
- USART_InitTypeDef USART_InitStructure;
+
 
 /* Private function prototypes -----------------------------------------------*/
 #ifdef __GNUC__
@@ -97,22 +78,22 @@ int main(void)
     Led_Configuration();
 	
     UsartDbg_Configuration();
-/*
+
     usart_init(COM1_GPS);
     UsartGps_Configuration();
 
     usart_init(COM2_GSM);
     UsartGsm_Configuration();
-*/
+
 	NVIC_Configuration();
 	IT_Configuration();
 
 	/* Configure EXTI Line to generate an interrupt on falling edge */
-  EXTI_Configuration();
+  	EXTI_Configuration();
 
 	/* Enable PWR and BKP clock */
-  RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
-PWR_BackupAccessCmd(ENABLE); 
+  	RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
+	PWR_BackupAccessCmd(ENABLE);
 
 	RTC_Configuration();
 	
@@ -136,8 +117,8 @@ PWR_BackupAccessCmd(ENABLE);
 	//test_uart3_send();
 #endif
 
-    //GSM_Init();
-	//GPS_Init();
+    GSM_Init();
+	GPS_Init();
 
 
 	//GSM_test_once();
@@ -157,9 +138,9 @@ PWR_BackupAccessCmd(ENABLE);
 		/* Set the RTC Alarm after 3s */
 	    /* Insert 1.5 second delay */
 		STM_EVAL_LEDOn(LED2);
-	    Delay(1500);
+	    Delay(1000);
 		STM_EVAL_LEDOff(LED2);
-Delay(1500);
+		Delay(1000);
 
     }
 }
