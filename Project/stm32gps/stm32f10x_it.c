@@ -166,12 +166,45 @@ void SysTick_Handler(void)
     usart_timeout(1, 0);
 }
 
-/******************************************************************************/
-/*                 STM32F10x Peripherals Interrupt Handlers                   */
-/*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
-/*  available peripheral interrupt handler's name please refer to the startup */
-/*  file (startup_stm32f10x_xx.s).                                            */
-/******************************************************************************/
+/**
+  * @brief  This function handles RTC Alarm interrupt request.
+  * @param  None
+  * @retval None
+  */
+void RTCAlarm_IRQHandler(void)
+{
+  if(RTC_GetITStatus(RTC_IT_ALR) != RESET)
+  {
+  	printf("Come in RTC Alarm\n");
+    /* Toggle LED3 */
+    STM_EVAL_LEDToggle(LED3);
+
+    /* Clear EXTI line17 pending bit */
+    EXTI_ClearITPendingBit(EXTI_Line17);
+
+    /* Check if the Wake-Up flag is set */
+    if(PWR_GetFlagStatus(PWR_FLAG_WU) != RESET)
+    {
+      /* Clear Wake Up flag */
+      PWR_ClearFlag(PWR_FLAG_WU);
+    }
+
+    /* Wait until last write operation on RTC registers has finished */
+    RTC_WaitForLastTask();   
+    /* Clear RTC Alarm interrupt pending bit */
+    RTC_ClearITPendingBit(RTC_IT_ALR);
+    /* Wait until last write operation on RTC registers has finished */
+    RTC_WaitForLastTask();
+
+	/* Alarm in 3 second */
+    RTC_SetAlarm(RTC_GetCounter()+ 3);
+	
+    /* Wait until last write operation on RTC registers has finished */
+    RTC_WaitForLastTask();
+
+  }
+}
+
 
 void USART_IRQHandler_register(uint32_t com, UART_INT_HANDLER handler, uint32_t arg)
 {
@@ -183,15 +216,6 @@ void USART_IRQHandler_register(uint32_t com, UART_INT_HANDLER handler, uint32_t 
     uart_int_arg[com] = arg;
 }
 
-
-/**
-  * @brief  This function handles PPP interrupt request.
-  * @param  None
-  * @retval None
-  */
-/*void PPP_IRQHandler(void)
-{
-}*/
 
 void USART1_IRQHandler(void)
 {
@@ -225,6 +249,22 @@ void USART3_IRQHandler(void)
         while(1);
     }
 }
+
+/******************************************************************************/
+/*                 STM32F10x Peripherals Interrupt Handlers                   */
+/*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
+/*  available peripheral interrupt handler's name please refer to the startup */
+/*  file (startup_stm32f10x_xx.s).                                            */
+/******************************************************************************/
+
+/**
+  * @brief  This function handles PPP interrupt request.
+  * @param  None
+  * @retval None
+  */
+/*void PPP_IRQHandler(void)
+{
+}*/
 
 /**
   * @}

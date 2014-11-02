@@ -40,8 +40,12 @@
 #define STM32_SIM908_GSM_COM COM2_GSM
 
 #define USART_GSM_BAUD 9600
-#define USART_GPS_BAUD 9600
 #define USART_DBG_BAUD 9600
+#ifdef USE_STM32_GPS_BOARD_VA
+ 	#define USART_GPS_BAUD 9600
+#elif defined USE_STM32_GPS_BOARD_VB
+ 	#define USART_GPS_BAUD 115200
+#endif
 
 #define NULL 0
 
@@ -55,6 +59,8 @@ void UsartGps_Configuration(void);
 void UsartGsm_Configuration(void);
 void NVIC_Configuration(void);
 void IT_Configuration(void);
+void RTC_Configuration(void);
+void EXTI_Configuration(void);
 
 
 #endif /* __STM32_SIM908_CFG_H */

@@ -92,20 +92,42 @@ int main(void)
        system_stm32f10x.c file
      */     
 
-    SysTick_Configuration();
+    
     GPIO_Configuration();
     Led_Configuration();
+	
     UsartDbg_Configuration();
-
+/*
     usart_init(COM1_GPS);
     UsartGps_Configuration();
 
     usart_init(COM2_GSM);
     UsartGsm_Configuration();
-
+*/
 	NVIC_Configuration();
 	IT_Configuration();
+
+	/* Configure EXTI Line to generate an interrupt on falling edge */
+  EXTI_Configuration();
+
+	/* Enable PWR and BKP clock */
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
+PWR_BackupAccessCmd(ENABLE); 
+
+	RTC_Configuration();
 	
+	SysTick_Configuration();
+
+	/* Wait till RTC Second event occurs */
+    RTC_ClearFlag(RTC_FLAG_SEC);
+    while(RTC_GetFlagStatus(RTC_FLAG_SEC) == RESET);
+
+    /* Alarm in 3 second */
+    RTC_SetAlarm(RTC_GetCounter()+ 3);
+	
+    /* Wait until last write operation on RTC registers has finished */
+    RTC_WaitForLastTask();
+	STM_EVAL_LEDOn(LED3);
 #ifdef TEST_MACRO
 	//test_led();
 	//test_uart1_send();
@@ -115,19 +137,30 @@ int main(void)
 #endif
 
     //GSM_Init();
-	GPS_Init();
+	//GPS_Init();
 
 
 	//GSM_test_once();
 	//printf("\n END \n");
     //GSM_SendSMS(targetNumber, targetMsg, 1);
+
+/* Request to enter STANDBY mode (Wake Up flag is cleared in PWR_EnterSTANDBYMode function) */
+//PWR_EnterSTANDBYMode();
+
     while(1)
     {
         //GSM_test();
-        GPSInfoAnalyze();
-		GPSShow();
+        //GPSInfoAnalyze();
+		//GPSShow();
 		//GPRS_ReceiveData("+CMTI");
-		Delay(1000);
+		//Delay(1000);
+		/* Set the RTC Alarm after 3s */
+	    /* Insert 1.5 second delay */
+		STM_EVAL_LEDOn(LED2);
+	    Delay(1500);
+		STM_EVAL_LEDOff(LED2);
+Delay(1500);
+
     }
 }
 
