@@ -28,13 +28,6 @@
 #include "stm32gps_board.h"
 #include "usart.h"
 
-/** @addtogroup STM32F10x_StdPeriph_Examples
-  * @{
-  */
-
-/** @addtogroup USART_Printf
-  * @{
-  */ 
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -164,6 +157,7 @@ void SysTick_Handler(void)
 
     usart_timeout(0, 0);
     usart_timeout(1, 0);
+	TimingDelay_Decrement();
 }
 
 static UART_INT_HANDLER uart_int_handler[COMn] = {NULL, NULL, NULL};
@@ -211,6 +205,19 @@ void USART3_IRQHandler(void)
         while(1);
     }
 }
+
+void RTC_IRQHandler(void)
+{
+
+	RTC_ClearITPendingBit(RTC_IT_SEC|RTC_IT_ALR);  
+	RTC_WaitForLastTask(); 
+	STM_EVAL_LEDToggle(LED1);
+	/* Set the RTC Alarm after 5s */
+	RTC_SetAlarm(RTC_GetCounter()+ 5);
+	/* Wait until last write operation on RTC registers has finished */
+	RTC_WaitForLastTask();
+}
+
 /******************************************************************************/
 /*                 STM32F10x Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */

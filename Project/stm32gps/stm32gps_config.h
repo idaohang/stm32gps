@@ -50,12 +50,18 @@
 #define RST_OK   0xAA
 #define RST_FAIL 0x55
 
-void delay_ms(uint32_t Timer);
-void stm32_sim908_sys_tick_cfg(void);
-void stm32_sim908_led_cfg(void);
-void stm32_sim908_com_debug_cfg(void);
-void stm32_sim908_com_gps_cfg(void);
-void stm32_sim908_com_gsm_cfg(void);
+/* Exported functions ------------------------------------------------------- */
+void TimingDelay_Decrement(void);
+
+void delay_10ms(__IO uint32_t nTime);
+void stm32gps_sys_tick_cfg(void);
+void RTC_Configuration(void);
+void NVIC_Configuration(void);
+void IWDG_Configuration(void);
+void stm32gps_led_cfg(void);
+void stm32gps_com_debug_cfg(void);
+void stm32gps_com_gps_cfg(void);
+void stm32gps_com_gsm_cfg(void);
 
 #endif /* __STM32_SIM908_CFG_H */
 

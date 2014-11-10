@@ -32,6 +32,5 @@ void usart_irq(uint32_t chan, USART_ST *usart_st);
 void usart_timeout(uint32_t chan, USART_ST *pusart);
 
 void USART1_Config(void);
-void NVIC_Configuration(void);
 
 #endif /* USART_H */

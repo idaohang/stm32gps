@@ -6,28 +6,147 @@
 
 USART_InitTypeDef USART_InitStructure;
 
-void delay_ms(uint32_t Timer)
-{
-    volatile uint32_t i=0;
-    uint32_t tickPerMs = SystemCoreClock/1000;
+/* Private variables ---------------------------------------------------------*/
+static __IO uint32_t TimingDelay;
 
-    while(Timer)
-    {
-        i=tickPerMs/6-1;
-        while(i--);
-        Timer--;
-    }
+
+/**
+  * @brief  Inserts a delay time.
+  * @param  nTime: specifies the delay time length, in milliseconds.
+  * @retval None
+  */
+void delay_10ms(__IO uint32_t nTime)
+{ 
+  TimingDelay = nTime;
+
+  while(TimingDelay != 0);
 }
 
-void stm32_sim908_sys_tick_cfg(void)
+/**
+  * @brief  Decrements the TimingDelay variable.
+  * @param  None
+  * @retval None
+  */
+void TimingDelay_Decrement(void)
 {
-    if (SysTick_Config(SystemCoreClock / SYS_TICK_PER_SEC))
+  if (TimingDelay != 0x00)
+  { 
+    TimingDelay--;
+  }
+}
+
+/**
+  * @brief  Configures the SysTick to generate an interrupt each 10 ms.
+  * @param  None
+  * @retval None
+  */
+void stm32gps_sys_tick_cfg(void)
+{
+	/* SysTick interrupt each 10 ms */
+	if (SysTick_Config(SystemCoreClock / SYS_TICK_PER_SEC))
     {
       /* Capture error */
       while (1);
     }
 }
-void stm32_sim908_led_cfg(void)
+
+/**
+  * @brief  Configures RTC clock source and prescaler.
+  * @param  None
+  * @retval None
+  */
+void RTC_Configuration(void)
+{
+  /* Check if the StandBy flag is set */
+  if(PWR_GetFlagStatus(PWR_FLAG_SB) != RESET)
+  {/* System resumed from STANDBY mode */
+
+    /* Clear StandBy flag */
+    PWR_ClearFlag(PWR_FLAG_SB);
+
+    /* Wait for RTC APB registers synchronisation */
+    RTC_WaitForSynchro();
+    /* No need to configure the RTC as the RTC configuration(clock source, enable,
+       prescaler,...) is kept after wake-up from STANDBY */
+  }
+  else
+  {/* StandBy flag is not set */
+
+    /* RTC clock source configuration ----------------------------------------*/
+    /* Reset Backup Domain */
+    BKP_DeInit();
+  
+    /* Enable LSE OSC */
+	RCC_LSICmd(ENABLE);
+    /* Wait till LSE is ready */
+	while(RCC_GetFlagStatus(RCC_FLAG_LSIRDY) == RESET)
+    {
+    }
+
+    /* Select the RTC Clock Source */
+	RCC_RTCCLKConfig(RCC_RTCCLKSource_LSI);
+
+    /* Enable the RTC Clock */
+    RCC_RTCCLKCmd(ENABLE);
+
+    /* RTC configuration -----------------------------------------------------*/
+    /* Wait for RTC APB registers synchronisation */
+    RTC_WaitForSynchro();
+
+    /* Set the RTC time base to 1s */
+    RTC_SetPrescaler(32767);  
+    /* Wait until last write operation on RTC registers has finished */
+    RTC_WaitForLastTask();
+	RTC_ITConfig(RTC_IT_ALR, ENABLE);
+	RTC_WaitForLastTask();
+  }
+}
+
+/**
+  * @brief  Configures the NVIC.
+  * @param  None
+  * @retval None
+  */
+void NVIC_Configuration(void)
+{  
+NVIC_InitTypeDef NVIC_InitStructure;  /*设置先占优先级1位，从占优先级3位*/  
+NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);  /*选择RTC的IRQ通道*/   
+NVIC_InitStructure.NVIC_IRQChannel =RTC_IRQn;  /*设置中断先占优先级为1*/   
+NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority =1;  /*设置中断从占优先级为1*/   
+NVIC_InitStructure.NVIC_IRQChannelSubPriority =0;  /*使能RTC的IRQ通道*/   
+NVIC_InitStructure.NVIC_IRQChannelCmd =ENABLE;  
+NVIC_Init(&NVIC_InitStructure);
+
+}
+
+
+/**
+  * @brief  Configures the WatchDog.
+  * @param  None
+  * @retval None
+  */
+void IWDG_Configuration(void)
+{
+	/* IWDG timeout equal to 250 ms (the timeout may varies due to LSI frequency
+	     dispersion) */
+	/* Enable write access to IWDG_PR and IWDG_RLR registers */
+	IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+
+	/* IWDG counter clock: LSI/32 */
+	IWDG_SetPrescaler(IWDG_Prescaler_256);
+
+	/* Set counter reload value to obtain 10s IWDG TimeOut.
+	 Counter Reload Value = 10s/6.4ms = 1562
+	*/
+	IWDG_SetReload(1562);
+}
+
+/**
+  * @brief  Configures the SysTick to generate an interrupt each 250 ms.
+  * @param  None
+  * @retval None
+  */
+void stm32gps_led_cfg(void)
 {
     STM_EVAL_LEDInit_Test(LED1);
     //STM_EVAL_LEDInit(LED2);
@@ -40,7 +159,7 @@ void stm32_sim908_led_cfg(void)
     //STM_EVAL_LEDOn(LED4);
 }
 
-void stm32_sim908_com_debug_cfg(void)
+void stm32gps_com_debug_cfg(void)
 {
     /* USARTx configured as follow:
      - BaudRate = 9600 baud
@@ -108,7 +227,7 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 #endif
 
-void stm32_sim908_com_gps_cfg(void)
+void stm32gps_com_gps_cfg(void)
 {
     USART_InitStructure.USART_BaudRate = USART_GPS_BAUD;
     USART_InitStructure.USART_WordLength = USART_WordLength_8b;
@@ -120,7 +239,7 @@ void stm32_sim908_com_gps_cfg(void)
     STM_EVAL_COMInit(COM1_GPS, &USART_InitStructure);
 }
 
-void stm32_sim908_com_gsm_cfg(void)
+void stm32gps_com_gsm_cfg(void)
 {
     USART_InitStructure.USART_BaudRate = USART_GSM_BAUD;
     USART_InitStructure.USART_WordLength = USART_WordLength_8b;

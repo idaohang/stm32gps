@@ -30,6 +30,7 @@
 #include "GSM_App.h"
 #include "GPS_App.h"
 #include "eelink.h"
+#include "gpio.h"
 
 /** @addtogroup STM32F10x_StdPeriph_Examples
  * @{
@@ -48,6 +49,7 @@ typedef struct
 /* Private macro -------------------------------------------------------------*/
 #undef TEST_MACRO
 /* Private variables ---------------------------------------------------------*/
+__IO uint32_t LsiFreq = 40000;
 
 uint16_t g_seq;  // packet's sequence
 
@@ -375,23 +377,33 @@ void PackGpsMsg(void)
  */
 int main(void) 
 {
-	
+	int i = 0;
     ST_GPSRMCINFO rmc;
 	unsigned char errNum = 0;
-	
 
-	
-    stm32_sim908_sys_tick_cfg();
-    stm32_sim908_led_cfg();
+	stm32gps_sys_tick_cfg();
+	/* Enable PWR and BKP clock */
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
+
+  /* Enable WKUP pin */
+  PWR_WakeUpPinCmd(ENABLE);
+
+  /* Allow access to BKP Domain */
+  PWR_BackupAccessCmd(ENABLE);
+	RTC_Configuration();
+	NVIC_Configuration();
+	IWDG_Configuration();
+    
+    stm32gps_led_cfg();
 	STM_EVAL_LEDOff(LED1);
-    stm32_sim908_com_debug_cfg();
 
+    stm32gps_com_debug_cfg();
+#if 0
     usart_init(STM32_SIM908_GPS_COM);
-    stm32_sim908_com_gps_cfg();
+    stm32gps_com_gps_cfg();
 
     usart_init(STM32_SIM908_GSM_COM);
-    stm32_sim908_com_gsm_cfg();
-
+    stm32gps_com_gsm_cfg();
 
 	InitVeriables();
     GSM_Init();
@@ -454,8 +466,58 @@ while(1)
 		{
 			g_seq = 1;
 		}
-		delay_ms(1000);
+		delay_10ms(100);
     }
+}
+#endif
+#if 0
+printf("this being in standby mode\n");
+delay_10ms(100);
+/* Wait till RTC Second event occurs */
+RTC_ClearFlag(RTC_FLAG_SEC);
+while(RTC_GetFlagStatus(RTC_FLAG_SEC) == RESET);
+
+/* Set the RTC Alarm after 6s */
+RTC_SetAlarm(RTC_GetCounter()+ 6);
+/* Wait until last write operation on RTC registers has finished */
+RTC_WaitForLastTask();
+
+/* Request to enter STANDBY mode (Wake Up flag is cleared in PWR_EnterSTANDBYMode function) */
+PWR_EnterSTANDBYMode();
+#endif
+/* Check if the system has resumed from IWDG reset */
+  if (RCC_GetFlagStatus(RCC_FLAG_IWDGRST) != RESET)
+  {
+    /* IWDGRST flag set */
+    /* Turn on LED1 */
+    STM_EVAL_LEDOn(LED1);
+
+    /* Clear reset flags */
+    RCC_ClearFlag();
+	printf("Resume from iwdg\n");
+  }
+  else
+  {
+    /* IWDGRST flag is not set */
+    /* Turn off LED1 */
+    STM_EVAL_LEDOff(LED1);
+	printf("NOT Resume from iwdg\n");
+  }
+  
+  /* Reload IWDG counter */
+  IWDG_ReloadCounter();
+	/* Enable IWDG (the LSI oscillator will be enabled by hardware) */
+  IWDG_Enable();
+while(1)
+{
+	STM_EVAL_LEDToggle(LED1);
+	delay_10ms(100);
+	i++;
+	printf("i = %d\n", i);
+	if(i < 20)
+	{
+		IWDG_ReloadCounter();
+	}
 }
 
 }

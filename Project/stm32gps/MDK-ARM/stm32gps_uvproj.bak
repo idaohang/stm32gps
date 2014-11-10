@@ -502,14 +502,9 @@
           <GroupName>STM32_GPS</GroupName>
           <Files>
             <File>
-              <FileName>stm32_eval.c</FileName>
+              <FileName>stm32gps_board.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\STM32_GPS\stm32_eval.c</FilePath>
-            </File>
-            <File>
-              <FileName>global_utilities.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\global_utilities.c</FilePath>
+              <FilePath>..\..\..\Utilities\STM32_GPS\stm32gps_board.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -560,11 +555,6 @@
               <FileName>GSM_App.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\Utilities\SIM800L\GSM_App.c</FilePath>
-            </File>
-            <File>
-              <FileName>string_operator.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\SIM800L\string_operator.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1066,14 +1056,9 @@
           <GroupName>STM32_GPS</GroupName>
           <Files>
             <File>
-              <FileName>stm32_eval.c</FileName>
+              <FileName>stm32gps_board.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\STM32_GPS\stm32_eval.c</FilePath>
-            </File>
-            <File>
-              <FileName>global_utilities.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\global_utilities.c</FilePath>
+              <FilePath>..\..\..\Utilities\STM32_GPS\stm32gps_board.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1124,11 +1109,6 @@
               <FileName>GSM_App.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\Utilities\SIM800L\GSM_App.c</FilePath>
-            </File>
-            <File>
-              <FileName>string_operator.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\SIM800L\string_operator.c</FilePath>
             </File>
           </Files>
         </Group>

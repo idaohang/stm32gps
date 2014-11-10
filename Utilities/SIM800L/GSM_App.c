@@ -317,9 +317,9 @@ void GSM_PowerCtrlInit(void)
 void GSM_PowerOnOff(void)
 {
     GPIO_ResetBits(GPIOC, GPIO_Pin_10);
-    delay_ms(3000);
+    delay_10ms(300);
     GPIO_SetBits(GPIOC, GPIO_Pin_10);
-    delay_ms(3000);
+    delay_10ms(300);
 }
 
 /*********************************************************************************************************
@@ -377,7 +377,7 @@ unsigned char GSM_SendAT(char *pCMD, char *pCMDBack, uint32_t CMDLen)
         while (--i)
         {
             len = USART_GSM_BUFSIZE;
-            delay_ms(100);
+            delay_10ms(10);
 
             //printf("GSM_SendAT before usart_readbuffer len %d\n", len);
 
@@ -453,7 +453,7 @@ unsigned char GSM_SendAT_rsp(char *pCMD, char *pCMDBack,
     while (--i)
     {
         len = USART_GSM_BUFSIZE;
-        delay_ms(100);
+        delay_10ms(10);
 
         //printf("GSM_SendAT before usart_readbuffer len %d\n", len);
         retFlag = usart_readbuffer(STM32_SIM908_GSM_COM, pBackBuf, &len);
@@ -802,13 +802,13 @@ unsigned char GSM_SendSMS(char *pNumb, char *pSMS, unsigned char type)
         cmdLen = strlen(pcmdbuf);
         GSM_SendAT(pcmdbuf, ">", cmdLen);					  //设置目标号码
 
-        delay_ms(500);
+        delay_10ms(50);
         strcat(smsBuffer, "\x1A");					 				//添加结束符号0x1A
         cmdLen = strlen(smsBuffer);
         GSM_ClearBuffer();
         usart_sendbuffer(STM32_SIM908_GSM_COM, smsBuffer,
                 (unsigned int *) &cmdLen);
-        delay_ms(2000);
+        delay_10ms(200);
         cmdLen = USART_GSM_BUFSIZE;
         usart_sendbuffer(STM32_SIM908_GSM_COM, BackBuf,
                 (unsigned int*) &cmdLen);
@@ -852,14 +852,14 @@ unsigned char GSM_SendSMS(char *pNumb, char *pSMS, unsigned char type)
         cmdLen = strlen(pcmdbuf);
         GSM_SendAT(pcmdbuf, ">", cmdLen);					  //设置目标号码
 
-        delay_ms(500);
+        delay_10ms(50);
 
         strcat(smsBuffer, "\x1A");
         cmdLen = strlen(smsBuffer);
         GSM_ClearBuffer();
         usart_sendbuffer(STM32_SIM908_GSM_COM, smsBuffer,
                 (unsigned int *) &cmdLen);
-        delay_ms(2000);
+        delay_10ms(200);
         cmdLen = USART_GSM_BUFSIZE;
         usart_sendbuffer(STM32_SIM908_GSM_COM, BackBuf,
                 (unsigned int*) &cmdLen);
@@ -887,7 +887,7 @@ void GSM_simcard_Init(void)
     len = strlen(AT_CPIN);
     while (USART_SUCESS != GSM_SendAT((char *) AT_CPIN, (char *) "READY", len))
     {
-        delay_ms(100);
+        delay_10ms(20);
         i++;
 #if 0
         if (i > 2)
@@ -936,7 +936,7 @@ void GSM_Init(void)
 
     while (USART_SUCESS != GSM_SendAT((char *) AT_Cmd, (char *) AT_OK, len))
     {
-        delay_ms(300);
+        delay_10ms(30);
         i++;
         if (i > 2)
         {
@@ -1313,7 +1313,7 @@ unsigned char GPRS_SendData(char *pString, unsigned int len)
         while (--i)
         {
             len = USART_GSM_BUFSIZE;
-            delay_ms(200);
+            delay_10ms(200);
 
             //printf("GSM_SendAT before usart_readbuffer len %d\n", len);
 
@@ -1375,7 +1375,7 @@ unsigned char GPRS_ReceiveData(char *pString)
     while (--i)
     {
         len = USART_GSM_BUFSIZE_RECEIVE;
-        delay_ms(200);
+        delay_10ms(20);
 
         //printf("GSM_SendAT before usart_readbuffer len %d\n", len);
 
@@ -1722,7 +1722,7 @@ void GSM_test_once(void)
     	{
 			printf("GPRS_SendData Fail\n");
     	}
-		delay_ms(10000);
+		delay_10ms(1000);
 	}
 #endif
 }
