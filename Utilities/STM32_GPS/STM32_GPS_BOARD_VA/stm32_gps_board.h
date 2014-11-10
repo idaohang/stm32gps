@@ -23,35 +23,12 @@
 #ifndef __STM32_GPS_BOARD_H
 #define __STM32_GPS_BOARD_H
 
-/* Includes ------------------------------------------------------------------*/
-#include "stm32_eval.h"
-
 #ifdef __cplusplus
  extern "C" {
 #endif
 
-/** @addtogroup Utilities
-  * @{
-  */
-
-/** @addtogroup STM32_EVAL
-  * @{
-  */
-    
-/** @addtogroup STM3210C_EVAL
-  * @{
-  */ 
-
-/** @addtogroup STM3210C_EVAL_LOW_LEVEL
-  * @{
-  */ 
-  
-/** @defgroup STM3210C_EVAL_LOW_LEVEL_Exported_Types
-  * @{
-  */
-/**
-  * @}
-  */ 
+/* Includes ------------------------------------------------------------------*/
+#include "stm32gps_board.h"
 
 /** @defgroup STM3210C_EVAL_LOW_LEVEL_Exported_Constants
   * @{

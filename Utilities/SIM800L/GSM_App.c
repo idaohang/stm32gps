@@ -22,32 +22,223 @@
  ** Description:
  **
  *********************************************************************************************************/
-
+#include "at_sim800.h"
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"
 
 #include "stm32gps_config.h"
-#include "stm32_eval.h"
 #include "usart.h"
-#include "at_command.h"
-#include "string_operator.h"
-#include "global_utilities.h"
 #include "GSM_App.h"
-
 
 static char BackBuf[USART_GSM_BUFSIZE];
 static char sendBuf[USART_GSM_BUFSIZE_SEND];
 static char receiveBuf[USART_GSM_BUFSIZE_RECEIVE];
 
-pST_GSMCMD pGSM_msg;
-extern volatile ST_RTCTIME CurSysTime;
 unsigned char GSMNetType;
 
-///////////////////////function declearation ///////////////////////
-static void GSM_simcard_Init(void);
-static unsigned char GSM_SendAT(char *pCMD, char *pCMDBack, uint32_t CMDLen);
+/*********************************************************************************************************
+ ** Function name:       strnchr()
+ ** Descriptions:        查找字符串中第n个字符的位置
+ ** input parameters:    S 需要查找的目标字符串
+ **                      C 需要查找的字符
+ **                      n 第几个位置的C
+ ** output parameters:   需要查找的字符位置指针
+ ** Returned value:
+ *********************************************************************************************************/
+char *strnchr(char *S, int C, int n)
+{
+    char *pnchr = NULL;
+    char *pStr = S;
 
+    if (n > strlen(S))
+    {
+        return NULL;
+    }
+    while (n--)
+    {
+        pnchr = strchr((const char *) pStr, C);
+        if (NULL == pnchr)
+        {
+            break;
+        }
+        else
+        {
+            pStr = pnchr + 1;
+        }
+    }
+    return pnchr;
+}
+
+/*********************************************************************************************************
+ ** Function name:       strstr_len()
+ ** Descriptions:        查找字符串中子字符串的位置，返回子字符串的位置
+ ** input parameters:    str 需要查找的目标字符串
+ **                      subStr 需要查找的子字符串
+ **                      strlenth 目标字符串的长度
+ ** output parameters:   
+ ** Returned value:      子字符串的位置指针
+ ** Example:  strstr_len("this,are,my,pointer", "my", 19) 返回的指针指向“m“的位置
+ *********************************************************************************************************/
+char *strstr_len(char *str, char *subStr, uint32_t strlenth)
+{
+    uint32_t subStrLen = strlen(subStr);
+    int32_t cmpCnt = strlenth - strlen(subStr) + 1;
+
+    char *retPtr = NULL;
+    int32_t i;
+
+    if (cmpCnt > 0)
+    {
+        for (i = 0; i < cmpCnt; i ++)
+        {
+            if (memcmp(str+i, subStr, subStrLen) == 0)
+            {
+                break;
+            }
+        }
+
+        if (i < cmpCnt)
+        {
+            retPtr = str + i;
+        }
+    }
+
+    return retPtr;
+}
+
+/*********************************************************************************************************
+ ** Function name:       strnchr_len()
+ ** Descriptions:        查找字符串中第几个字符值的位置，返回C的位置
+ ** input parameters:    S 需要查找的目标字符串
+ **                      C 需要查找的字符值
+ **                      n 查找几个字符
+ **                      len 目标字符串的长度
+ ** output parameters:   
+ ** Returned value:      C的位置指针
+ ** Example: strnchr_len("this,are,my,pointer", ',', 2, 19); 返回指针指向are后面的','的位置
+ *********************************************************************************************************/
+char *strnchr_len(char *S, int C, uint32_t n, uint32_t len)
+{
+    char *pnchr = NULL;
+    char *pStr = S;
+    uint32_t i;
+
+    if (n > len)
+    {
+        return NULL;
+    }
+    while (n--)
+    {
+        for (i = 0; i < len; i ++)
+        {
+            if (*(pStr+i) == C)
+            {
+                break;
+            }
+        }
+
+        if (i < len)
+        {
+            pnchr = pStr+i;
+            len -= i + 1;
+        }
+        else {
+            pnchr = NULL;
+        }
+
+        if (NULL == pnchr)
+        {
+            break;
+        }
+        else
+        {
+            pStr = pnchr + 1;
+        }
+    }
+    return pnchr;
+}
+
+/*********************************************************************************************************
+ ** Function name:       strdig_len()
+ ** Descriptions:        查找字符串中是否有n个数字，如果有则返回第一个数字位置的指针，如果没有则返回NULL。
+ **                      字符串的长度必须大于需要查找的数字个数。
+ ** input parameters:    str 需要查找的目标字符串
+ **                      strlen 需要查找的字符串的长度
+ **                      diglen 需要查找的数字的个数
+ ** output parameters:   
+ ** Returned value:      第一个数字的字符位置指针 or NULL
+ *********************************************************************************************************/
+char *strdig_len(char *str, uint32_t strlen, uint32_t diglen)
+{
+
+    char *retPtr = NULL;
+    int32_t i;
+	int32_t sumlen = 0;
+
+
+    if (strlen > 0 && strlen > diglen)
+    {
+        for (i = 0; i < strlen; i ++)
+        {
+			if((*(str+i)>='0') && (*(str+i)<='9'))
+			{
+				sumlen++;
+			}
+			else
+			{
+				sumlen = 0;
+			}
+            if (sumlen >= diglen)
+            {
+				break;
+            }
+        }
+
+        if (sumlen >= diglen)
+        {
+            retPtr = str + i - diglen +1;
+        }
+    }
+
+    return retPtr;
+}
+
+/*********************************************************************************************************
+ ** Function name:       strhex_len()
+ ** Descriptions:        将十六进制字符串转换为十六进制数
+ ** input parameters:    str 需要查找的目标字符串
+ **                      len 目标字符串的长度
+ ** output parameters:   
+ ** Returned value:      转换后的十六进制数
+ ** Example: 比如，字符串是"04"，转换后的值是0x04， 字符串是"2F"，转换后的值是0x2F
+ *********************************************************************************************************/
+uint32_t strhex_len(char *str, uint32_t len)
+{
+    uint32_t i;
+	uint32_t sum = 0;
+	uint32_t tmp = 0;
+    for(i = 0; i < len; i++)
+    {
+	
+	 if (str[i]>='A' && str[i] <='F')
+	 {
+		tmp = str[i]-55;//a-f之间的ascii与对应数值相差55如'A'为65,65-55即为A
+	 }
+	 else if(str[i]>='a' && str[i] <='f')
+	 {
+		tmp = str[i]-87;
+	 }
+	 else if(str[i]>='0' && str[i] <='9')
+	 {
+		tmp = str[i]-48;
+	 }
+		sum <<= 4;
+		sum |= tmp;
+	}
+
+    return sum;
+}
 
 /*********************************************************************************************************
  ** Function name:       GSM_RingPinInit()
@@ -97,6 +288,24 @@ unsigned char GSM_ChkRingSta(void)
     return 0;
 }
 
+/*********************************************************************************************************
+ ** Function name:       GSM_PowerCtrlInit()
+ ** Descriptions:        启动控制IO初始化
+ ** input parameters:    NONE
+ ** output parameters:   NONE
+ ** Returned value:
+ *********************************************************************************************************/
+void GSM_PowerCtrlInit(void)
+{
+    GPIO_InitTypeDef GPIO_InitStructure;
+
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
+
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+    GPIO_Init(GPIOC, &GPIO_InitStructure);
+}
 
 /*********************************************************************************************************
  ** Function name:       GSM_PowerOnOff()
@@ -107,58 +316,10 @@ unsigned char GSM_ChkRingSta(void)
  *********************************************************************************************************/
 void GSM_PowerOnOff(void)
 {
-    GPIO_ResetBits(GPIOC, GPIO_Pin_12);
+    GPIO_ResetBits(GPIOC, GPIO_Pin_10);
     delay_ms(3000);
-    GPIO_SetBits(GPIOC, GPIO_Pin_12);
+    GPIO_SetBits(GPIOC, GPIO_Pin_10);
     delay_ms(3000);
-}
-
-/** \brief 开启模块
- *
- * 通过拉低PWRKEY并保持至少1秒，然后释放，可以开启模块
- * 同样，通过拉低PWRKEY并保持至少1秒，然后释放，可以关闭模块
- *
- *  \param void
- *  \retval void
- */
-void GSM_PowerOn(void)
-{
-	if(SET == GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_11))
-	{
-		printf("GPRS(SIM800L) have Turned On\n");
-	}
-	else
-	{
-		printf("GPRS(SIM800L) is Turning On...\n");
-		GPIO_ResetBits(GPIOA, GPIO_Pin_12);
-		delay_ms(2000);
-		GPIO_SetBits(GPIOA, GPIO_Pin_12);;	
-		delay_ms(5000);
-	}
-}
-
-/** \brief 开启模块
- *
- * 通过拉低PWRKEY并保持至少1秒，然后释放，可以开启模块
- * 同样，通过拉低PWRKEY并保持至少1秒，然后释放，可以关闭模块
- *
- *  \param void
- *  \retval void
- */
-void GSM_PowerOff(void)
-{
-	if(RESET == GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_11))
-	{
-		printf("GPRS(SIM800L) have Turned Off\n");
-	}
-	else
-	{
-		printf("GPRS(SIM800L) is Turning Off...\n");
-		GPIO_ResetBits(GPIOA, GPIO_Pin_12);
-		delay_ms(2000);
-		GPIO_SetBits(GPIOA, GPIO_Pin_12);;	
-		delay_ms(3000);
-	}
 }
 
 /*********************************************************************************************************
@@ -182,7 +343,7 @@ void GSM_ClearBuffer(void)
  ** Returned value:      发送指令返回状态
  *********************************************************************************************************/
 #define DBG_GSM_SendAT
-static unsigned char GSM_SendAT(char *pCMD, char *pCMDBack, uint32_t CMDLen)
+unsigned char GSM_SendAT(char *pCMD, char *pCMDBack, uint32_t CMDLen)
 {
     unsigned char i = AT_RESEND_TIMES;
     unsigned int len;
@@ -236,6 +397,7 @@ static unsigned char GSM_SendAT(char *pCMD, char *pCMDBack, uint32_t CMDLen)
                         printf("%c",pBackBuf[tmpIdx]);
                     }
                     printf("\r\n");
+					
                     printf("GSM_SendAT recv done\r\n");
                 }
             }
@@ -405,6 +567,200 @@ unsigned char GSM_QuerySignal(unsigned char *pSig)
     }
     return USART_FAIL;
 }
+
+/*********************************************************************************************************
+ ** Function name:       GSM_QueryImei
+ ** Descriptions:        查询IMEI
+ ** input parameters:    NONE
+ ** output parameters:   pImei
+ ** Returned value:      返回状态结果
+ *********************************************************************************************************/
+unsigned char GSM_QueryImei(uint8_t *pImei)
+{
+    unsigned int cmdLen;
+    static char *pfeed = NULL;
+	char *pRecvBuf = NULL;
+    uint32_t recvLen = 0;
+
+	cmdLen = strlen(AT_GSN_TEST);
+	while (USART_SUCESS != GSM_SendAT((char *)AT_GSN_TEST, (char *)AT_OK, cmdLen));
+
+    cmdLen = strlen(AT_GSN);
+    GSM_ClearBuffer();
+    if (USART_SUCESS == GSM_SendAT_rsp((char *)AT_GSN, (char *)AT_OK, cmdLen, &pRecvBuf, &recvLen))
+    {
+		
+        pfeed = strdig_len(pRecvBuf, recvLen, 15);
+        if (pfeed == NULL)
+        {
+            return USART_FAIL;
+        }
+        
+		if (pImei != NULL)
+        {
+            memcpy(pImei, pfeed, 15);
+        }
+		
+        return USART_SUCESS;
+    }
+    return USART_FAIL;
+}
+
+/*********************************************************************************************************
+ ** Function name:       GSM_QueryImsi
+ ** Descriptions:        查询IMSI
+ ** input parameters:    NONE
+ ** output parameters:   pImsiInfo
+ ** Returned value:      返回状态结果
+ *********************************************************************************************************/
+unsigned char GSM_QueryImsi(pST_IMSIINFO pImsiInfo)
+{
+	uint32_t i;
+    unsigned int cmdLen;
+    static char *pfeed = NULL;
+	char *pRecvBuf = NULL;
+    uint32_t recvLen = 0;
+	char tmpMcc[4];
+	char tmpMnc[3];
+	uint32_t tmpValue = 0;
+
+    cmdLen = strlen(AT_CIMI);
+    GSM_ClearBuffer();
+    if (USART_SUCESS == GSM_SendAT_rsp((char *)AT_CIMI, (char *)AT_OK, cmdLen, &pRecvBuf, &recvLen))
+    {
+		
+        pfeed = strdig_len(pRecvBuf, recvLen, 15);
+        if (pfeed == NULL)
+        {
+            return USART_FAIL;
+        }
+
+		for(i = 0; i < 3; i++)
+		{
+			tmpMcc[i] = *(pfeed+i);
+		}
+		tmpMcc[3] = '\0';
+
+		for(i = 0; i < 2; i++)
+		{
+			tmpMnc[i] = *(pfeed+3+i);
+		}
+		tmpMnc[2] = '\0';
+
+		tmpValue = atoi(tmpMcc);
+		pImsiInfo->Mcc[0] = (tmpValue/255);
+		if(tmpValue > 255)
+		{
+			pImsiInfo->Mcc[1] = (tmpValue%255 - 1);
+		}
+		else
+		{
+			pImsiInfo->Mcc[1] = (tmpValue%255);
+		}
+
+		tmpValue = atoi(tmpMnc);
+		pImsiInfo->Mnc[0] = (tmpValue/255);
+		if(tmpValue > 255)
+		{
+			pImsiInfo->Mnc[1] = (tmpValue%255 - 1);
+		}
+		else
+		{
+			pImsiInfo->Mnc[1] = (tmpValue%255);
+		}
+		
+        return USART_SUCESS;
+    }
+    return USART_FAIL;
+}
+
+/*********************************************************************************************************
+ ** Function name:       GSM_QueryCREG
+ ** Descriptions:        查询IMSI
+ ** input parameters:    NONE
+ ** output parameters:   pImsiInfo
+ ** Returned value:      返回状态结果
+ *********************************************************************************************************/
+unsigned char GSM_QueryCreg(pST_CREGINFO pCregInfo)
+{
+	static char *pcmdbuf = NULL;
+    unsigned int cmdLen = 0;
+    char *pRecvBuf = NULL;
+    uint32_t recvLen = 0;
+    char *pStr = NULL;
+	char tmpbuf[2];
+
+    pcmdbuf = sendBuf;
+    sprintf(pcmdbuf, AT_CREG_SET, 2);
+    cmdLen = strlen(pcmdbuf);
+    while (USART_SUCESS != GSM_SendAT((char *) pcmdbuf, (char *) AT_OK, cmdLen));
+
+	cmdLen = strlen(AT_CREG);
+	GSM_ClearBuffer();
+    if(USART_SUCESS == GSM_SendAT_rsp((char *)AT_CREG, (char *) "CREG",
+            							cmdLen, &pRecvBuf, &recvLen))
+    {
+
+		// lac
+	    pStr = strnchr_len(pRecvBuf, '"', 1, recvLen);
+		if(pStr == NULL)
+		{
+			return USART_FAIL;
+		}
+	    if (pStr != NULL)
+	    {
+	        tmpbuf[0] = *(pStr+1);
+			tmpbuf[1] = *(pStr+2);
+			pCregInfo->Lac[0] = strhex_len(tmpbuf, strlen(tmpbuf));
+			tmpbuf[0] = *(pStr+3);
+			tmpbuf[1] = *(pStr+4);
+			pCregInfo->Lac[1] = strhex_len(tmpbuf, strlen(tmpbuf));
+	    }
+
+		// ci
+	    pStr = strnchr_len(pRecvBuf, '"', 3, recvLen);
+		if(pStr == NULL)
+		{
+			return USART_FAIL;
+		}
+	    if (pStr != NULL)
+	    {
+	        tmpbuf[0] = *(pStr+1);
+			tmpbuf[1] = *(pStr+2);
+			pCregInfo->Ci[0] = strhex_len(tmpbuf, strlen(tmpbuf));
+			tmpbuf[0] = *(pStr+3);
+			tmpbuf[1] = *(pStr+4);
+			pCregInfo->Ci[1] = strhex_len(tmpbuf, strlen(tmpbuf));
+	    }
+
+		// stat
+	    pStr = strnchr_len(pRecvBuf, ',', 2, recvLen);
+		if(pStr == NULL)
+		{
+			return USART_FAIL;
+		}
+	    if (pStr != NULL)
+	    {
+			pCregInfo->Stat = *(pStr-1);
+	    }
+
+		// n
+	    pStr = strnchr_len(pRecvBuf, ',', 1, recvLen);
+		if(pStr == NULL)
+		{
+			return USART_FAIL;
+		}
+	    if (pStr != NULL)
+	    {
+			pCregInfo->n = *(pStr-1);
+    	}
+
+		return USART_SUCESS;
+    }
+
+    return USART_FAIL;
+}
+
 /*********************************************************************************************************
  ** Function name:       GSM_SendSMS
  ** Descriptions:        发送一条短信
@@ -521,15 +877,15 @@ unsigned char GSM_SendSMS(char *pNumb, char *pSMS, unsigned char type)
  ** output parameters:   NONE
  ** Returned value:      NONE
  *********************************************************************************************************/
-static void GSM_simcard_Init(void)
+void GSM_simcard_Init(void)
 {
     uint32_t i;
     uint32_t len;
 
-    //查询卡状态，是否插入
+    //查询卡状态
     i = 0;
-    len = sizeof(AT_CPIN) - 1;
-    while (USART_SUCESS != GSM_SendAT((char *) AT_CPIN, (char *) AT_READY, len))
+    len = strlen(AT_CPIN);
+    while (USART_SUCESS != GSM_SendAT((char *) AT_CPIN, (char *) "READY", len))
     {
         delay_ms(100);
         i++;
@@ -571,11 +927,12 @@ void GSM_Init(void)
     unsigned char i = 0;
     unsigned char len;
 
+    GSM_PowerCtrlInit();
     GSM_RingPinInit();
 //	GSM_PowerOnOff();											
 
     // AT握手
-    len = sizeof(AT_Cmd) - 1;
+    len = strlen(AT_Cmd);
 
     while (USART_SUCESS != GSM_SendAT((char *) AT_Cmd, (char *) AT_OK, len))
     {
@@ -589,10 +946,11 @@ void GSM_Init(void)
     }
 
     //关闭回显
-    len = sizeof(ATE0_Cmd) - 1;
-    GSM_SendAT((char *) ATE0_Cmd, (char *) AT_OK, sizeof(ATE0_Cmd));
+    len = strlen(ATE0_Cmd);
+    GSM_SendAT((char *) ATE0_Cmd, (char *) AT_OK, len);
 
     GSM_simcard_Init();
+    //GPS_Init();
 }
 /*********************************************************************************************************
  ** Function name:       GSM_CallNumber
@@ -836,24 +1194,32 @@ unsigned char GSM_SetRTCTime(ST_RTCTIME rtctime)
 }
 
 /*********************************************************************************************************
- ** Function name:       GSM_GetIMEI
- ** Descriptions:        查询IMEI
- ** input parameters:    NONE
+ ** Function name:       GSM_SetSClk
+ ** Descriptions:        设置Slow Clock
+ ** input parameters:    value: 需要设置的clock信息 2 - enable slow clock auto
  ** output parameters:   NONE
  ** Returned value:      返回状态结果
  *********************************************************************************************************/
-unsigned char GSM_GetIMEI(pST_GSNIMEI imei)
+unsigned char GSM_SetSClk(uint32_t value)
 {
-    unsigned int cmdLen;
-    //static char *pfeed = NULL;
+    static char *pcmdbuf = NULL;
+    unsigned int cmdLen = 0;
 
-    cmdLen = strlen(AT_GSN);
     GSM_ClearBuffer();
-    if (USART_SUCESS == GSM_SendAT((char *) AT_GSN, (char *) AT_OK, cmdLen))
+    pcmdbuf = sendBuf;
+    if (pcmdbuf == NULL)
     {
-        strncpy(imei.IMEI, BackBuf, 15);
-        return USART_SUCESS;
+        return USART_FAIL;
     }
+
+	pcmdbuf = sendBuf;
+    sprintf(pcmdbuf, AT_CSCLK_SET, 2);
+    cmdLen = strlen(pcmdbuf);
+    if (USART_SUCESS == GSM_SendAT((char *) pcmdbuf, (char *) AT_OK, cmdLen))
+	{
+		return USART_SUCESS;
+    }
+	
     return USART_FAIL;
 }
 
@@ -974,15 +1340,15 @@ unsigned char GPRS_SendData(char *pString, unsigned int len)
                 }
             }
 			printf("%d retFlag = %d len = %d\n\n", i, retFlag, len);
-
+#endif
 			if (len > 0 && retFlag == USART_ENPROCESS)
             {
-                if (NULL != strstr_len(pBackBuf, pString, len))
+                if (NULL != strstr_len(pBackBuf, "OK", len))
                 {
                     break;
                 }
             }
-#endif
+
         }
         if (i == 0)
         {
@@ -1020,7 +1386,7 @@ unsigned char GPRS_ReceiveData(char *pString)
 #ifdef DBG_GPRS_ReceiveData
         {
             uint32_t tmpIdx;
-			uint32_t tmpStart;
+			
 
             if (len > 0 && retFlag == USART_ENPROCESS)
             {
@@ -1082,6 +1448,25 @@ unsigned char GPRS_CloseLink(void)
     return USART_FAIL;
 }
 /*********************************************************************************************************
+ ** Function name:       GPRS_CIPShut
+ ** Descriptions:      	退出GPRS链接
+ ** input parameters:    NONE
+ ** output parameters:   NONE
+ ** Returned value:      返回状态结果
+ *********************************************************************************************************/
+unsigned char GPRS_CIPShut(void)
+{
+    unsigned int cmdLen;
+
+    cmdLen = strlen(AT_CIPSHUT);
+    if (USART_SUCESS
+            == GSM_SendAT((char *) AT_CIPSHUT, (char *) AT_OK, cmdLen))
+    {
+        return USART_SUCESS;
+    }
+    return USART_FAIL;
+}
+/*********************************************************************************************************
  ** Function name:       GSM_QueryBattery
  ** Descriptions:      	查询电池状态
  ** input parameters:    NONE
@@ -1099,13 +1484,20 @@ unsigned char GSM_QueryBattery(pST_BATTERYSTATUS pSig)
     {
         pfeed = strnchr(BackBuf, ',', 1);	//提取充电状态
         if (pfeed == NULL)
+        {
             return USART_FAIL;
+        }
         pfeed -= 1;
         pSig->BatStatus = pfeed[0];
 
         pfeed = strnchr(BackBuf, ',', 2);	//提取电池电量信息
         if (pfeed == NULL)
+        {
             return USART_FAIL;
+        }
+		
+		pSig->BatVoltage.i= (pfeed[1] - 0x30)*1000 + (pfeed[2] - 0x30)*100 + (pfeed[3] - 0x30)*10 + (pfeed[4] - 0x30);
+		
         pfeed -= 3;
         if (pfeed[0] >= 0x30 && pfeed[0] <= 0x39)
         {
@@ -1116,6 +1508,8 @@ unsigned char GSM_QueryBattery(pST_BATTERYSTATUS pSig)
         {
             pSig->BatPower = (pfeed[1] - 0x30) * 10 + (pfeed[2] - 0x30);
         }
+
+		
         return USART_SUCESS;
     }
     return USART_FAIL;
@@ -1237,6 +1631,24 @@ unsigned char GSM_cgpsstatus(void)
     return USART_SUCESS;
 }
 
+void GPRS_Init_Interface(void)
+{
+    unsigned int cmdLen;
+	ST_NETWORKCONFIG stNetCfg;
+
+    sprintf(stNetCfg.TransferMode, "%s", "TCP");
+    sprintf(stNetCfg.RemoteIP, "%s", "121.40.200.84");
+    sprintf(stNetCfg.RemotePort, "6666");
+
+	cmdLen = strlen(AT_CIPMODE_0);
+    GSM_SendAT((char *) AT_CIPMODE_0, (char *) AT_OK, cmdLen);
+	GSM_cgatt();
+    GSM_cstt();
+    GSM_ciicr();
+    GSM_cifsr();
+    while (USART_SUCESS != GPRS_LinkServer(&stNetCfg));
+}
+
 char str[30] = "123456789012345678901234567890";
 void GSM_str_test(void)
 {
@@ -1287,7 +1699,7 @@ void GSM_test_once(void)
 	str[15] = 0x00;
 	str[16] = 0x20;
 
-	sprintf(stNetCfg.TransferMode, "%s", "TCP");
+	  sprintf(stNetCfg.TransferMode, "%s", "TCP");
     sprintf(stNetCfg.RemoteIP, "%s", "121.40.200.84");
     sprintf(stNetCfg.RemotePort, "6666");
     //while (USART_SUCESS != GSM_CallNumber((char*)Test_TelNumber));
@@ -1315,9 +1727,94 @@ void GSM_test_once(void)
 #endif
 }
 
+#define DBG_GSM_DATA
+void GetGsmData(pST_SIMDATA pSimData)
+{
+	uint32_t i;
+	ST_IMSIINFO imsi;
+	ST_CREGINFO creg;
+	ST_BATTERYSTATUS battery;
+	unsigned char signal = 0;
+
+	while(USART_SUCESS != GSM_QueryImsi(&imsi));
+	while(USART_SUCESS != GSM_QueryCreg(&creg));
+	while(USART_SUCESS != GSM_QueryBattery(&battery));
+	while(USART_SUCESS != GSM_QuerySignal(&signal));
+
+	pSimData->Station[0] = imsi.Mcc[0];
+	pSimData->Station[1] = imsi.Mcc[1];
+	pSimData->Station[2] = imsi.Mnc[0];
+	pSimData->Station[3] = imsi.Mnc[1];
+	pSimData->Station[4] = creg.Lac[0];
+	pSimData->Station[5] = creg.Lac[1];
+	pSimData->Station[6] = 0x00;  // 补零
+	pSimData->Station[7] = creg.Ci[0];
+	pSimData->Station[8] = creg.Ci[1];
+
+	pSimData->Battery[0] = battery.BatVoltage.s[1];
+	pSimData->Battery[1] = battery.BatVoltage.s[0];
+
+	sprintf(pSimData->Signal, "%x", signal);
+
+#ifdef DBG_GSM_DATA
+printf("STATION:");
+for(i = 0; i < 9; i++)
+{
+	printf("0x%x-", pSimData->Station[i]);
+}
+printf("\n");
+printf("BATTERY:");
+for(i = 0; i < 2; i++)
+{
+	printf("0x%x-", pSimData->Battery[i]);
+}
+printf("\n");
+printf("SIGNAL:");
+for(i = 0; i < 2; i++)
+{
+	printf("0x%x-", pSimData->Signal[i]);
+}
+printf("\n");
+#endif
+}
+
 void GSM_test(void)
 {
-    GSM_cgpsstatus();
+	int i;
+	uint8_t signal = 0;
+    //GSM_cgpsstatus();
+    uint8_t imeibuf[IMEI_BUFSIZE];
+	ST_BATTERYSTATUS battery;
+	ST_IMSIINFO imsi;
+	ST_CREGINFO creg;
+	//unsigned int cmdLen;
+    while(USART_SUCESS != GSM_QueryImei(imeibuf));
+	
+	for(i = 0; i < 15; i++)
+	{
+		printf("0x%x - %c;", imeibuf[i],imeibuf[i]);
+	}
+	printf("\n");
+	
+	while(USART_SUCESS != GSM_QuerySignal(&signal));
+	printf("signal = %d\n", signal);
+
+	while(USART_SUCESS != GSM_QueryBattery(&battery));
+	printf("power = %d;status=%d voltage[0]=0x%x [1] = 0x%x\n", battery.BatPower,battery.BatStatus, battery.BatVoltage.s[0], battery.BatVoltage.s[1]);
+
+// cimi
+	
+	while (USART_SUCESS != GSM_QueryImsi(&imsi));
+	printf("mcc[0] = 0x%x, mcc[1] = 0x%x; mnc[0]=0x%x,mnc[1]=0x%x\n", imsi.Mcc[0],imsi.Mcc[1],imsi.Mnc[0],imsi.Mnc[1]);
+
+
+	while(USART_SUCESS != GSM_QueryCreg(&creg));
+	printf("n = %d; status=%d lac[0] = 0x%x, lac[1] = 0x%x ci[0] = 0x%x ci[1] = 0x%x\n", creg.n, creg.Stat, creg.Lac[0], creg.Lac[1], creg.Ci[0], creg.Ci[1]);
+    //GSM_creg();
+	//GSM_cgatt();
+    //GSM_cstt();
+    //GSM_ciicr();
+    //GSM_cifsr();
 }
 
 void GSM_tcpip_test(void)

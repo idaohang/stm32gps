@@ -1,85 +1,46 @@
-
 #include "stm32f10x.h"
 #include "stm32f10x_it_api.h"
-#include "stm32_eval.h"
+#include "stm32gps_board.h"
 #include "stm32gps_config.h"
-#include "usart.h"
 #include <stdio.h>
 
+USART_InitTypeDef USART_InitStructure;
 
-/**
-  * @brief  Configures the SysTick to generate an interrupt each 1 ms.
-  * @param  None
-  * @retval None
-  */
-void SysTick_Configuration(void)
+void delay_ms(uint32_t Timer)
 {
-	/* Setup SysTick Timer for 1 msec interrupts  */
-  if (SysTick_Config(SystemCoreClock / 1000))
-  { 
-    /* Capture error */ 
-    while (1);
-  }
-  /* Set SysTick Priority to 3 */
-  NVIC_SetPriority(SysTick_IRQn, 0x0C);
+    volatile uint32_t i=0;
+    uint32_t tickPerMs = SystemCoreClock/1000;
+
+    while(Timer)
+    {
+        i=tickPerMs/6-1;
+        while(i--);
+        Timer--;
+    }
 }
 
-/**
-  * @brief  Configures the different GPIO ports.
-  * @param  None
-  * @retval None
-  */
-void GPIO_Configuration(void)
+void stm32_sim908_sys_tick_cfg(void)
 {
-  GPIO_InitTypeDef GPIO_InitStruct;
-
-#ifdef USE_STM32_GPS_BOARD_VA
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
-
-    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_10;
-    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOC, &GPIO_InitStruct);
-#elif defined USE_STM32_GPS_BOARD_VB
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
-
-    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_12;
-    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-	/*Configure GPIO pin : PA */
-  GPIO_InitStruct.GPIO_Pin = GPIO_Pin_11;
-  GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPD;
-  GPIO_Init(GPIOA, &GPIO_InitStruct);
-#endif
+    if (SysTick_Config(SystemCoreClock / SYS_TICK_PER_SEC))
+    {
+      /* Capture error */
+      while (1);
+    }
 }
-
-
-/**
-  * @brief  Configures the Leds.
-  * @param  None
-  * @retval None
-  */
-void Led_Configuration(void)
+void stm32_sim908_led_cfg(void)
 {
-#ifdef USE_STM32_GPS_BOARD_VA
     STM_EVAL_LEDInit_Test(LED1);
-    STM_EVAL_LEDOn(LED1);
-#elif defined USE_STM32_GPS_BOARD_VB
-	STM_EVAL_LEDInit(LED1);
-    STM_EVAL_LEDInit(LED2);
-    STM_EVAL_LEDInit(LED3);
-    STM_EVAL_LEDInit(LED4);
+    //STM_EVAL_LEDInit(LED2);
+    //STM_EVAL_LEDInit(LED3);
+    //STM_EVAL_LEDInit(LED4);
 
-    STM_EVAL_LEDOff(LED1);
-    STM_EVAL_LEDOff(LED2);
-    STM_EVAL_LEDOff(LED3);
-    STM_EVAL_LEDOn(LED4);
-#endif
+    STM_EVAL_LEDOn(LED1);
+    //STM_EVAL_LEDOff(LED2);
+    //STM_EVAL_LEDOff(LED3);
+    //STM_EVAL_LEDOn(LED4);
 }
 
-void UsartDbg_Configuration(void)
+void stm32_sim908_com_debug_cfg(void)
 {
     /* USARTx configured as follow:
      - BaudRate = 9600 baud
@@ -89,8 +50,6 @@ void UsartDbg_Configuration(void)
      - Hardware flow control disabled (RTS and CTS signals)
      - Receive and transmit enabled
      */
-	USART_InitTypeDef USART_InitStructure;
-	
     USART_InitStructure.USART_BaudRate = USART_DBG_BAUD;
     USART_InitStructure.USART_WordLength = USART_WordLength_8b;
     USART_InitStructure.USART_StopBits = USART_StopBits_1;
@@ -101,11 +60,56 @@ void UsartDbg_Configuration(void)
     STM_EVAL_COMInit(COM3_DEBUG, &USART_InitStructure);
 }
 
-void UsartGps_Configuration(void)
-{
-	USART_InitTypeDef USART_InitStructure;
+#ifdef __GNUC__
+/* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
+ set to 'Yes') calls __io_putchar() */
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif /* __GNUC__ */
 
- 	USART_InitStructure.USART_BaudRate = USART_GPS_BAUD;
+/**
+ * @brief  Retargets the C library printf function to the USART.
+ * @param  None
+ * @retval None
+ */
+PUTCHAR_PROTOTYPE 
+{
+    /* Place your implementation of fputc here */
+    /* e.g. write a character to the USART */
+    USART_SendData(EVAL_COM3, (uint8_t) ch);
+
+    /* Loop until the end of transmission */
+    while (USART_GetFlagStatus(EVAL_COM3, USART_FLAG_TC) == RESET) {
+    }
+
+    return ch;
+}
+
+#ifdef  USE_FULL_ASSERT
+
+/**
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
+void assert_failed(uint8_t* file, uint32_t line)
+{
+    /* User can add his own implementation to report the file name and line number,
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+
+    /* Infinite loop */
+    while (1)
+    {
+    }
+}
+
+#endif
+
+void stm32_sim908_com_gps_cfg(void)
+{
     USART_InitStructure.USART_BaudRate = USART_GPS_BAUD;
     USART_InitStructure.USART_WordLength = USART_WordLength_8b;
     USART_InitStructure.USART_StopBits = USART_StopBits_1;
@@ -116,10 +120,8 @@ void UsartGps_Configuration(void)
     STM_EVAL_COMInit(COM1_GPS, &USART_InitStructure);
 }
 
-void UsartGsm_Configuration(void)
+void stm32_sim908_com_gsm_cfg(void)
 {
-	USART_InitTypeDef USART_InitStructure;
-	
     USART_InitStructure.USART_BaudRate = USART_GSM_BAUD;
     USART_InitStructure.USART_WordLength = USART_WordLength_8b;
     USART_InitStructure.USART_StopBits = USART_StopBits_1;
@@ -129,146 +131,3 @@ void UsartGsm_Configuration(void)
 
     STM_EVAL_COMInit(COM2_GSM, &USART_InitStructure);
 }
-
-/**
-  * @brief  Configures NVIC and Vector Table base location.
-  * @param  None
-  * @retval None
-  */
-void NVIC_Configuration(void)
-{
-  NVIC_InitTypeDef NVIC_InitStructure;
-
-  /* Configure one bit for preemption priority -------------------------------- */
-  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
-
-
-	/* Enable the USARTz Interrupt */
-	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
-	
-
-    /* Enable the USARTz Interrupt */
-    NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
-
-    /* Enable the USARTz Interrupt */
-    NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
-
-	/* 2 bits for Preemption Priority and 2 bits for Sub Priority */
-  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
-  
-  NVIC_InitStructure.NVIC_IRQChannel = RTCAlarm_IRQn;  
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;  
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;  
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;  
-  NVIC_Init(&NVIC_InitStructure); 
-
-	/* Set SysTick Preemption Priority to 1 */
-	//NVIC_SetPriority(SysTick_IRQn, 0x04);
-}
-
-void IT_Configuration(void)
-{
-	USART_IRQHandler_register(COM1_GPS,(UART_INT_HANDLER)usart_irq,0);
-	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
-	USART_IRQHandler_register(COM2_GSM,(UART_INT_HANDLER)usart_irq,0);
-	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
-	USART_IRQHandler_register(COM3_DEBUG,uart3_int_handler,0);
-	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
-
-	/* Enable the RTC Alarm interrupt */
-  RTC_ITConfig(RTC_IT_ALR, ENABLE);
-  /* Wait until last write operation on RTC registers has finished */
-    RTC_WaitForLastTask();
-}
-
-
-/**
-  * @brief  Configures RTC clock source and prescaler.
-  * @param  None
-  * @retval None
-  */
-void RTC_Configuration(void)
-{
-	/* Check if the StandBy flag is set */
-  if(PWR_GetFlagStatus(PWR_FLAG_SB) != RESET)
-  {/* System resumed from STANDBY mode */
-  	
-    /* Turn on LED2 */
-    STM_EVAL_LEDOn(LED2);
-
-    /* Clear StandBy flag */
-    PWR_ClearFlag(PWR_FLAG_SB);
-
-    /* Wait for RTC APB registers synchronisation */
-    RTC_WaitForSynchro();
-    /* No need to configure the RTC as the RTC configuration(clock source, enable,
-       prescaler,...) is kept after wake-up from STANDBY */
-  } else
-  {/* StandBy flag is not set */
-	
-    /* RTC clock source configuration ----------------------------------------*/
-    /* Reset Backup Domain */
-    BKP_DeInit();
-  
-    /* Enable LSE OSC */
-    //RCC_LSEConfig(RCC_LSE_ON);
-    /* Wait till LSE is ready */
-    //while(RCC_GetFlagStatus(RCC_FLAG_LSERDY) == RESET)
-    //{
-    //}
-//RCC_LSICmd(ENABLE);
-    /* Select the RTC Clock Source */
-    //RCC_RTCCLKConfig(RCC_RTCCLKSource_LSE);
-    RCC_RTCCLKConfig(RCC_RTCCLKSource_HSE_Div128);
-
-    /* Enable the RTC Clock */
-    RCC_RTCCLKCmd(ENABLE);
-
-    /* RTC configuration -----------------------------------------------------*/
-    /* Wait for RTC APB registers synchronisation */
-    RTC_WaitForSynchro();
-	
-	RTC_WaitForLastTask();  
-
-    /* Set the RTC time base to 1s */
-    //RTC_SetPrescaler(32767);  
-    RTC_SetPrescaler(562500); 
-    /* Wait until last write operation on RTC registers has finished */
-    RTC_WaitForLastTask();
-	
-	
-    }
-
-	
-}
-
-/**
-  * @brief  Configures EXTI Lines.
-  * @param  None
-  * @retval None
-  */
-void EXTI_Configuration(void)
-{
-  EXTI_InitTypeDef EXTI_InitStructure;
-
-  /* Configure EXTI Line17(RTC Alarm) to generate an interrupt on rising edge */
-  EXTI_ClearITPendingBit(EXTI_Line17);
-  EXTI_InitStructure.EXTI_Line = EXTI_Line17;
-  EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-  EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
-  EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-  EXTI_Init(&EXTI_InitStructure);
-}
-

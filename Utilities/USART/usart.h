@@ -28,8 +28,10 @@ void usart_init(uint32_t chan);
 uint16_t USART_Send(USART_TypeDef* USARTx, uint8_t *Data, uint16_t nBytes);
 void usart_sendbuffer(uint32_t chan, char *byData, uint32_t *pReqLen);
 unsigned char usart_readbuffer(uint32_t chan, char *byData, uint32_t *pReqLen);
-void uart3_int_handler(uint32_t com, uint32_t arg);
 void usart_irq(uint32_t chan, USART_ST *usart_st);
 void usart_timeout(uint32_t chan, USART_ST *pusart);
+
+void USART1_Config(void);
+void NVIC_Configuration(void);
 
 #endif /* USART_H */

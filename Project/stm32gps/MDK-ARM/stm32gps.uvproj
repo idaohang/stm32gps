@@ -344,7 +344,7 @@
             <uThumb>0</uThumb>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_STDPERIPH_DRIVER, STM32F10X_HD, USE_STM32_GPS_BOARD_VB</Define>
+              <Define>USE_STDPERIPH_DRIVER, STM32F10X_HD, USE_STM32_GPS_BOARD_VA</Define>
               <Undefine></Undefine>
               <IncludePath>..\..\stm32gps;..\..\..\Libraries\CMSIS\CM3\CoreSupport;..\..\..\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x;..\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc;..\..\..\Utilities\STM32_GPS;..\..\..\Utilities\STM32_GPS\STM32_GPS_BOARD_VA;..\..\..\Utilities\STM32_GPS\Common;..\..\..\Utilities\SIM800L;..\..\..\Utilities\SIM28M;..\..\..\Utilities\USART;..\..\..\Utilities</IncludePath>
             </VariousControls>
@@ -502,14 +502,9 @@
           <GroupName>STM32_GPS</GroupName>
           <Files>
             <File>
-              <FileName>stm32_eval.c</FileName>
+              <FileName>stm32gps_board.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\STM32_GPS\stm32_eval.c</FilePath>
-            </File>
-            <File>
-              <FileName>global_utilities.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\global_utilities.c</FilePath>
+              <FilePath>..\..\..\Utilities\STM32_GPS\stm32gps_board.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -560,11 +555,6 @@
               <FileName>GSM_App.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\Utilities\SIM800L\GSM_App.c</FilePath>
-            </File>
-            <File>
-              <FileName>string_operator.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\SIM800L\string_operator.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1066,14 +1056,9 @@
           <GroupName>STM32_GPS</GroupName>
           <Files>
             <File>
-              <FileName>stm32_eval.c</FileName>
+              <FileName>stm32gps_board.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\STM32_GPS\stm32_eval.c</FilePath>
-            </File>
-            <File>
-              <FileName>global_utilities.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\global_utilities.c</FilePath>
+              <FilePath>..\..\..\Utilities\STM32_GPS\stm32gps_board.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1124,11 +1109,6 @@
               <FileName>GSM_App.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\Utilities\SIM800L\GSM_App.c</FilePath>
-            </File>
-            <File>
-              <FileName>string_operator.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Utilities\SIM800L\string_operator.c</FilePath>
             </File>
           </Files>
         </Group>

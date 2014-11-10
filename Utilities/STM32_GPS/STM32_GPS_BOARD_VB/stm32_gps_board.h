@@ -20,15 +20,30 @@
   */ 
   
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32_GPS_BOARD_H
-#define __STM32_GPS_BOARD_H
+#ifndef __STM32_SIM908_BOARD_H
+#define __STM32_SIM908_BOARD_H
 
-/* Includes ------------------------------------------------------------------*/
-#include "stm32_eval.h"
+#include "stm32f10x.h"
 
 #ifdef __cplusplus
  extern "C" {
 #endif
+
+/* Includes ------------------------------------------------------------------*/
+ typedef enum
+ {
+   LED1 = 0,
+   LED2 = 1,
+   LED3 = 2,
+   LED4 = 3
+ } Led_TypeDef;
+
+ typedef enum
+ {
+   COM1_GPS = 0,
+   COM2_GSM = 1,
+   COM3_DEBUG = 2
+ } COM_TypeDef;
 
 /** @addtogroup Utilities
   * @{
@@ -62,11 +77,11 @@
   */
 #define LEDn                             4
 
-#define LED1_PIN                         GPIO_Pin_8
-#define LED1_GPIO_PORT                   GPIOA
-#define LED1_GPIO_CLK                    RCC_APB2Periph_GPIOA
+#define LED1_PIN                         GPIO_Pin_3
+#define LED1_GPIO_PORT                   GPIOB
+#define LED1_GPIO_CLK                    RCC_APB2Periph_GPIOB
   
-#define LED2_PIN                         GPIO_Pin_15
+#define LED2_PIN                         GPIO_Pin_5
 #define LED2_GPIO_PORT                   GPIOB
 #define LED2_GPIO_CLK                    RCC_APB2Periph_GPIOB
 
@@ -139,7 +154,7 @@
 /** @defgroup STM3210C_EVAL_LOW_LEVEL_Exported_Functions
   * @{
   */ 
-void STM_EVAL_LEDInit_Test(Led_TypeDef Led);
+  void STM_EVAL_LEDInit_Test(Led_TypeDef Led);
 void STM_EVAL_LEDInit(Led_TypeDef Led);
 void STM_EVAL_LEDOn(Led_TypeDef Led);
 void STM_EVAL_LEDOff(Led_TypeDef Led);
@@ -153,7 +168,7 @@ void STM_EVAL_COMInit(COM_TypeDef COM, USART_InitTypeDef* USART_InitStruct);
 }
 #endif
 
-#endif /* __STM32_GPS_BOARD_H */
+#endif /* __STM32_SIM908_BOARD_H */
 /**
   * @}
   */ 

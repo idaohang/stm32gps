@@ -23,7 +23,8 @@
 #ifndef __STM32_SIM908_CFG_H
 #define __STM32_SIM908_CFG_H
 
-#include "stm32_eval.h"
+#include "stm32f10x.h"
+#include "stm32gps_board.h"
 
 #define SYS_TICK_PER_SEC 100u
 
@@ -36,32 +37,25 @@
 #define GSM_USART_TIMEOUT_MS 20
 #define GPS_USART_TIMEOUT_MS 20
 
+#define IMEI_BUFSIZE   15
+
 #define STM32_SIM908_GPS_COM COM1_GPS
 #define STM32_SIM908_GSM_COM COM2_GSM
 
 #define USART_GSM_BAUD 9600
+#define USART_GPS_BAUD 9600
 #define USART_DBG_BAUD 9600
-#ifdef USE_STM32_GPS_BOARD_VA
- 	#define USART_GPS_BAUD 9600
-#elif defined USE_STM32_GPS_BOARD_VB
- 	#define USART_GPS_BAUD 115200
-#endif
 
 #define NULL 0
+#define RST_OK   0xAA
+#define RST_FAIL 0x55
 
-void SysTick_Configuration(void);
-void GPIO_Configuration(void);
-void Led_Configuration(void);
-void UsartDbg_Configuration(void);
-
-void UsartDbg_Configuration(void);
-void UsartGps_Configuration(void);
-void UsartGsm_Configuration(void);
-void NVIC_Configuration(void);
-void IT_Configuration(void);
-void RTC_Configuration(void);
-void EXTI_Configuration(void);
-
+void delay_ms(uint32_t Timer);
+void stm32_sim908_sys_tick_cfg(void);
+void stm32_sim908_led_cfg(void);
+void stm32_sim908_com_debug_cfg(void);
+void stm32_sim908_com_gps_cfg(void);
+void stm32_sim908_com_gsm_cfg(void);
 
 #endif /* __STM32_SIM908_CFG_H */
 

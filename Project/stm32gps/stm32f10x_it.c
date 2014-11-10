@@ -1,12 +1,12 @@
 /**
   ******************************************************************************
-  * @file    Project/STM32F10x_StdPeriph_Template/stm32f10x_it.c 
+  * @file    USART/Printf/stm32f10x_it.c 
   * @author  MCD Application Team
   * @version V3.5.0
   * @date    08-April-2011
   * @brief   Main Interrupt Service Routines.
-  *          This file provides template for all exceptions handler and 
-  *          peripherals interrupt service routine.
+  *          This file provides template for all exceptions handler and peripherals
+  *          interrupt service routine.
   ******************************************************************************
   * @attention
   *
@@ -19,34 +19,28 @@
   *
   * <h2><center>&copy; COPYRIGHT 2011 STMicroelectronics</center></h2>
   ******************************************************************************
-  */
+  */ 
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32_eval.h"
-#include "stm32gps_config.h"
-#include "usart.h"
-#include "stm32f10x_it_api.h"
-
 #include "stm32f10x_it.h"
+#include "stm32f10x_it_api.h"
+#include "stm32gps_config.h"
+#include "stm32gps_board.h"
+#include "usart.h"
 
-
-/** @addtogroup STM32F10x_StdPeriph_Template
+/** @addtogroup STM32F10x_StdPeriph_Examples
   * @{
   */
+
+/** @addtogroup USART_Printf
+  * @{
+  */ 
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-__IO uint32_t TimingDelay = 0;
-
-static volatile uint32_t mSysTick = 0;
-static UART_INT_HANDLER uart_int_handler[COMn] = {NULL, NULL, NULL};
-static uint32_t uart_int_arg[COMn] = {0, 0, 0};
-
 /* Private function prototypes -----------------------------------------------*/
-
-
 /* Private functions ---------------------------------------------------------*/
 
 /******************************************************************************/
@@ -133,7 +127,7 @@ void DebugMon_Handler(void)
 }
 
 /**
-  * @brief  This function handles PendSVC exception.
+  * @brief  This function handles PendSV_Handler exception.
   * @param  None
   * @retval None
   */
@@ -141,70 +135,39 @@ void PendSV_Handler(void)
 {
 }
 
-uint32_t sysTickGet(void)
-{
-    return mSysTick;
-}
-
-uint32_t sysTickPerSec(void)
-{
-    return SYS_TICK_PER_SEC;
-}
-
 /**
   * @brief  This function handles SysTick Handler.
   * @param  None
   * @retval None
   */
+static volatile uint32_t mSysTick = 0;
+uint32_t sysTickGet(void)
+{
+    return mSysTick;
+}
+uint32_t sysTickPerSec(void)
+{
+    return SYS_TICK_PER_SEC;
+}
+
+void sysTickDelay(uint32_t tickCnt)
+{
+    uint32_t tick;
+
+    tick = sysTickGet();
+    while (sysTickGet() - tick <= tickCnt);
+}
+
 void SysTick_Handler(void)
 {
-	TimingDelay--;
-	
-	mSysTick ++;
+    mSysTick ++;
 
     usart_timeout(0, 0);
     usart_timeout(1, 0);
 }
 
-/**
-  * @brief  This function handles RTC Alarm interrupt request.
-  * @param  None
-  * @retval None
-  */
-void RTCAlarm_IRQHandler(void)
-{
-  if(RTC_GetITStatus(RTC_IT_ALR) != RESET)
-  {
-  	printf("Come in RTC Alarm\n");
-    /* Toggle LED3 */
-    STM_EVAL_LEDToggle(LED3);
-
-    /* Clear EXTI line17 pending bit */
-    EXTI_ClearITPendingBit(EXTI_Line17);
-
-    /* Check if the Wake-Up flag is set */
-    if(PWR_GetFlagStatus(PWR_FLAG_WU) != RESET)
-    {
-      /* Clear Wake Up flag */
-      PWR_ClearFlag(PWR_FLAG_WU);
-    }
-
-    /* Wait until last write operation on RTC registers has finished */
-    RTC_WaitForLastTask();   
-    /* Clear RTC Alarm interrupt pending bit */
-    RTC_ClearITPendingBit(RTC_IT_ALR);
-    /* Wait until last write operation on RTC registers has finished */
-    RTC_WaitForLastTask();
-
-	/* Alarm in 3 second */
-    RTC_SetAlarm(RTC_GetCounter()+ 3);
-	
-    /* Wait until last write operation on RTC registers has finished */
-    RTC_WaitForLastTask();
-
-  }
-}
-
+static UART_INT_HANDLER uart_int_handler[COMn] = {NULL, NULL, NULL};
+static uint32_t uart_int_arg[COMn] = {0, 0, 0};
 
 void USART_IRQHandler_register(uint32_t com, UART_INT_HANDLER handler, uint32_t arg)
 {
@@ -215,7 +178,6 @@ void USART_IRQHandler_register(uint32_t com, UART_INT_HANDLER handler, uint32_t 
     uart_int_handler[com] = handler;
     uart_int_arg[com] = arg;
 }
-
 
 void USART1_IRQHandler(void)
 {
@@ -249,7 +211,6 @@ void USART3_IRQHandler(void)
         while(1);
     }
 }
-
 /******************************************************************************/
 /*                 STM32F10x Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
@@ -270,5 +231,8 @@ void USART3_IRQHandler(void)
   * @}
   */ 
 
+/**
+  * @}
+  */ 
 
 /******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/

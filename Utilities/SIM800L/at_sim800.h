@@ -10,10 +10,11 @@
 
 const char AT_Cmd[]     =   "AT\r";
 const char AT_OK[]      =   "OK";
-const char AT_READY[]   =   "READY";
 const char ATI_Cmd[]    =   "ATI\r";
 const char ATE0_Cmd[]   =   "ATE0\r";
 const char AT_CSQ[]     =   "AT+CSQ\r";
+const char AT_GSN_TEST[]     =   "AT+GSN=?\r";
+const char AT_GSN[]     =   "AT+GSN\r";
 const char AT_CPIN[]    =   "AT+CPIN?\r";
 const char AT_COPS[]    =   "AT+COPS?\r";
 const char ATD_Cmd[]    =   "ATD%s;\r"; 									 //最大支持20位电话号码
@@ -42,8 +43,8 @@ const char AT_CMGF[] 		= 	"AT+CMGF=%d\r";
 const char AT_CMGS[]    = 	"AT+CMGS=\"%s\"\r";
 const char AT_CMGSPDU[] = 	"AT+CMGS=%d\r";
 const char AT_CBC[] 		=		"AT+CBC\r";
-
-const char AT_GSN[]     =   "AT+GSN\r"
+const char AT_CIMI[]    = "AT+CIMI\r";
+const char AT_CSCLK_SET[]   = "AT+CSCLK=%d\r";
 
 // gps command
 const char AT_CGPSPWR[] =       "AT+CGPSPWR=1\r";

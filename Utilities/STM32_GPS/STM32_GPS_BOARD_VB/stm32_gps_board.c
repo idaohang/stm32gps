@@ -24,11 +24,19 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32_gps_board.h"
+#include "stm32_sim908_board.h"
 #include "stm32f10x_it_api.h"
 #include "usart.h"
 
 /** @addtogroup Utilities
+ * @{
+ */
+
+/** @addtogroup STM32_EVAL
+ * @{
+ */
+
+/** @addtogroup STM3210C_EVAL
  * @{
  */
 
@@ -39,14 +47,39 @@
  * @{
  */
 
+/** @defgroup STM3210C_EVAL_LOW_LEVEL_Private_TypesDefinitions
+ * @{
+ */
+/**
+ * @}
+ */
 
-GPIO_TypeDef* GPIO_PORT[LEDn] = {LED1_GPIO_PORT, LED2_GPIO_PORT, LED3_GPIO_PORT,
-                                 LED4_GPIO_PORT};
-const uint16_t GPIO_PIN[LEDn] = {LED1_PIN, LED2_PIN, LED3_PIN,
-                                 LED4_PIN};
-const uint32_t GPIO_CLK[LEDn] = {LED1_GPIO_CLK, LED2_GPIO_CLK, LED3_GPIO_CLK,
-                                 LED4_GPIO_CLK};
+/** @defgroup STM3210C_EVAL_LOW_LEVEL_Private_Defines
+ * @{
+ */
+/**
+ * @}
+ */
 
+/** @defgroup STM3210C_EVAL_LOW_LEVEL_Private_Macros
+ * @{
+ */
+/**
+ * @}
+ */
+
+/** @defgroup STM3210C_EVAL_LOW_LEVEL_Private_Variables
+ * @{
+ */
+GPIO_TypeDef* GPIO_PORT[LEDn] = { LED1_GPIO_PORT, 
+								  LED2_GPIO_PORT,
+								  LED3_GPIO_PORT,
+								  LED4_GPIO_PORT };
+const uint16_t GPIO_PIN[LEDn] = { LED1_PIN, LED2_PIN, LED3_PIN, LED4_PIN };
+const uint32_t GPIO_CLK[LEDn] = { LED1_GPIO_CLK, 
+								  LED2_GPIO_CLK, 
+								  LED3_GPIO_CLK, 
+								  LED4_GPIO_CLK };
 USART_TypeDef* COM_USART[COMn] = { EVAL_COM1, EVAL_COM2, EVAL_COM3 };
 
 GPIO_TypeDef* COM_TX_PORT[COMn] = { EVAL_COM1_TX_GPIO_PORT,
@@ -111,9 +144,9 @@ void STM_EVAL_LEDInit(Led_TypeDef Led)
 
     /* Configure the GPIO_LED pin */
     GPIO_InitStructure.GPIO_Pin = GPIO_PIN[Led];
-	
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+
     GPIO_Init(GPIO_PORT[Led], &GPIO_InitStructure);
 }
 
@@ -185,28 +218,43 @@ void STM_EVAL_LEDToggle(Led_TypeDef Led) {
  *   contains the configuration information for the specified USART peripheral.
  * @retval None
  */
+void uart3_int_handler(uint32_t com, uint32_t arg)
+{
+    uint16_t data;
 
+    //STM_EVAL_LEDToggle(LED4);
+
+    if(USART_GetITStatus(USART3, USART_IT_RXNE) != RESET)
+    {
+      /* Read one byte from the receive data register */
+        data = USART_ReceiveData(USART3);
+    }
+}
 
 void STM_EVAL_COMInit(COM_TypeDef COM, USART_InitTypeDef* USART_InitStruct) 
 {
     GPIO_InitTypeDef GPIO_InitStructure;
-	
+    NVIC_InitTypeDef NVIC_InitStructure;
+
     /* Enable GPIO clock */
     RCC_APB2PeriphClockCmd(
             COM_TX_PORT_CLK[COM] | COM_RX_PORT_CLK[COM] | RCC_APB2Periph_AFIO,
             ENABLE);
 
-	/* Enable UART clock */
-    if (COM == COM1_GPS) 
-	{
+    if (COM == COM1_GPS) {
+        /* Enable the USART2 Pins Software Remapping */
+        //GPIO_PinRemapConfig(0, ENABLE);
         RCC_APB2PeriphClockCmd(COM_USART_CLK[COM], ENABLE);
     }
     else if (COM == COM2_GSM) 
 	{
+        /* Enable the USART2 Pins Software Remapping */
+        //GPIO_PinRemapConfig(0, ENABLE);
         RCC_APB1PeriphClockCmd(COM_USART_CLK[COM], ENABLE);
     }
-    else if (COM == COM3_DEBUG) 
-	{
+    else if (COM == COM3_DEBUG) {
+        /* Enable the USART2 Pins Software Remapping */
+        //GPIO_PinRemapConfig(0, ENABLE);
         RCC_APB1PeriphClockCmd(COM_USART_CLK[COM], ENABLE);
     }
 	else
@@ -227,6 +275,41 @@ void STM_EVAL_COMInit(COM_TypeDef COM, USART_InitTypeDef* USART_InitStruct)
 
     /* USART configuration */
     USART_Init(COM_USART[COM], USART_InitStruct);
+
+    if (COM == COM1_GPS) {
+        /* Enable the USARTz Interrupt */
+        NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
+        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+        NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+        NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+        NVIC_Init(&NVIC_InitStructure);
+
+        USART_IRQHandler_register(COM1_GPS,(UART_INT_HANDLER)usart_irq,0);
+        USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
+    }
+    else if (COM == COM2_GSM) 
+	{
+        /* Enable the USARTz Interrupt */
+        NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
+        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+        NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+        NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+        NVIC_Init(&NVIC_InitStructure);
+
+        USART_IRQHandler_register(COM2_GSM,(UART_INT_HANDLER)usart_irq,0);
+        USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+    }
+    else if (COM == COM3_DEBUG) {
+        /* Enable the USARTz Interrupt */
+        NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
+        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+        NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+        NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+        NVIC_Init(&NVIC_InitStructure);
+
+        USART_IRQHandler_register(COM3_DEBUG,uart3_int_handler,0);
+        USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
+    }
 
     /* Enable USART */
     USART_Cmd(COM_USART[COM], ENABLE);

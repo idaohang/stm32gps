@@ -1,0 +1,11 @@
+
+1. printf重定向
+Ref: http://blog.csdn.net/wdscq1234/article/details/7944036
+D:\GitHub\stm32gprs\Project\STM32F10x_StdPeriph_Template\stm32_sim908_cfg.c
+
+2.  硬件改版建议
+1. 串口1连接gps，串口2连接gsm，串口3作为调试串口，与开发板一致，方便对比测试。
+2. 设计好调试接口和指示灯（不要使用JTAG的复用管脚），方便程序调试和烧写，最好是标准接口。
+3.
+
+

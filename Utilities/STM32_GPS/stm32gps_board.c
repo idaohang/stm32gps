@@ -24,7 +24,7 @@
   */ 
   
 /* Includes ------------------------------------------------------------------*/
-#include "stm32_eval.h"
+#include "stm32gps_board.h"
 
 /** @addtogroup Utilities
   * @{

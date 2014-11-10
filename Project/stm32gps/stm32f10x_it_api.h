@@ -28,6 +28,7 @@
 
 uint32_t sysTickGet(void);
 uint32_t sysTickPerSec(void);
+void sysTickDelay(uint32_t tickCnt);
 
 typedef void (*UART_INT_HANDLER)(uint32_t com, uint32_t arg);
 void USART_IRQHandler_register(uint32_t com, UART_INT_HANDLER handler, uint32_t arg);

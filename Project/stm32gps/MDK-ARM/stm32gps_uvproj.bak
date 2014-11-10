@@ -115,7 +115,7 @@
             <Oh166RecLen>16</Oh166RecLen>
           </OPTHX>
           <Simulator>
-            <UseSimulator>1</UseSimulator>
+            <UseSimulator>0</UseSimulator>
             <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
             <RunToMain>1</RunToMain>
             <RestoreBreakpoints>1</RestoreBreakpoints>
@@ -126,7 +126,7 @@
             <LimitSpeedToRealTime>0</LimitSpeedToRealTime>
           </Simulator>
           <Target>
-            <UseTarget>0</UseTarget>
+            <UseTarget>1</UseTarget>
             <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
             <RunToMain>0</RunToMain>
             <RestoreBreakpoints>1</RestoreBreakpoints>
@@ -136,7 +136,7 @@
             <RestoreToolbox>1</RestoreToolbox>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
-          <TargetSelection>5</TargetSelection>
+          <TargetSelection>7</TargetSelection>
           <SimDlls>
             <CpuDll></CpuDll>
             <CpuDllArguments></CpuDllArguments>
@@ -163,7 +163,7 @@
             <DriverSelection>4099</DriverSelection>
           </Flash1>
           <Flash2>Segger\JL2CM3.dll</Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
         </Utilities>
         <TargetArmAds>
@@ -505,6 +505,11 @@
               <FileName>stm32_eval.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\Utilities\STM32_GPS\stm32_eval.c</FilePath>
+            </File>
+            <File>
+              <FileName>global_utilities.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Utilities\global_utilities.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1064,6 +1069,11 @@
               <FileName>stm32_eval.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\Utilities\STM32_GPS\stm32_eval.c</FilePath>
+            </File>
+            <File>
+              <FileName>global_utilities.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Utilities\global_utilities.c</FilePath>
             </File>
           </Files>
         </Group>
