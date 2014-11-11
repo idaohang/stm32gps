@@ -107,13 +107,13 @@ void ShowGpsMsg(void)
 }
 
 /*********************************************************************************************************
- ** Function name:       InitVeriables()
+ ** Function name:       InitVariables()
  ** Descriptions:        初始化全局变量
  ** input parameters:    NONE
  ** output parameters:   NONE
  ** Returned value:      NONE
  *********************************************************************************************************/
-void InitVeriables(void)
+void InitVariables(void)
 {
 	uint32_t i;
 	g_seq = 1;
@@ -405,7 +405,7 @@ int main(void)
     usart_init(STM32_SIM908_GSM_COM);
     stm32gps_com_gsm_cfg();
 
-	InitVeriables();
+	InitVariables();
     GSM_Init();
 
 while(1)
