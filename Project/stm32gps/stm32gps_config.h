@@ -27,6 +27,10 @@
 #include "stm32gps_board.h"
 
 #define SYS_TICK_PER_SEC 100u
+#define TIM2_PERIOD_TIMER 60000  // 60s
+
+
+#define SLEEP_SEC_INTIMER  600 // 10 min
 
 #define AT_RESEND_TIMES  5
 
@@ -54,9 +58,14 @@
 void TimingDelay_Decrement(void);
 
 void delay_10ms(__IO uint32_t nTime);
+void delay_ms(uint32_t Timer);
 void stm32gps_sys_tick_cfg(void);
 void RTC_Configuration(void);
-void NVIC_Configuration(void);
+void TIM2_Configuration(void);
+void RTC_NVIC_Configuration(void);
+void TIM2_NVIC_Configuration(void);
+void TIM2_Start(void);
+void TIM2_Stop(void);
 void IWDG_Configuration(void);
 void stm32gps_led_cfg(void);
 void stm32gps_com_debug_cfg(void);

@@ -28,6 +28,7 @@
 #include "time.h"
 
 #include "stm32gps_config.h"
+#include "stm32gps_board.h"
 #include "usart.h"
 #include "GSM_App.h"
 #include "GPS_App.h"
@@ -36,7 +37,7 @@
 #define INT_MAX ((int)0x7FFFFFFF)
 #define INT_MIN ((int)0x80000000)
 
-int my_atoi_len(const char * str, const int len);
+static int my_atoi_len(const char * str, const int len);
 
 char GPSBuffer[USART_GPS_BUFSIZE];
 
@@ -56,6 +57,78 @@ char GPS_Ninfo[30] = "N:\0";
 char Altitude_info[5] = "\0";
 char Speed_info[6] = "\0";
 char Degrees_info[4] = "\0";
+
+/*********************************************************************************************************
+ ** Function name:       my_atoi_len
+ ** Descriptions:        依据len将字符串转换为数字
+ ** input parameters:    str 要转换的字符串
+ **						len 要转换的长度
+ ** output parameters:   NONE
+ ** Returned value:      转换得到的数字值
+ ** Example: my_atoi_len("12345", 2) 将得到数字 12
+ *********************************************************************************************************/
+static int my_atoi_len(const char * str, const int len)
+{
+    int minus=0;
+    long long result=0;
+	int rst = 0;
+	int valid;
+    
+    if(str==NULL)
+        return 0;
+    while(*str==' ')
+        str++;
+    if(*str=='-')
+    {
+        minus=1;
+        str++;
+    }
+    else if(*str=='+')
+        str++;
+    if(*str<'0'||*str>'9')
+        return 0;
+
+    valid=1;
+    while((*str>='0' && *str<='9') && (rst < len))
+    {
+        result=result*10+*str-'0';
+        if((minus && result>INT_MAX + 1LL) || (!minus && result>INT_MAX))
+        {
+            valid=0;
+            return 0;
+        }
+
+        str++;
+		rst++;
+    }
+
+    if(minus)
+        result*=-1;
+    return (int)result;
+}
+
+/**
+  * @brief  Turn on GPS's VCC power.
+  * Output LOW to Turn On VCC Power; HIGH to Turn Off VCC Power.
+  * @param  None
+  * @retval None
+  */
+void GPSPowerOn(void)
+{
+	GPIO_ResetBits(GPS_PWR_CTRL_PORT, GPS_PWR_CTRL_PIN);
+}
+
+/**
+  * @brief  Turn off GPS's VCC power.
+  * Output LOW to Turn On VCC Power; HIGH to Turn Off VCC Power.
+  * @param  None
+  * @retval None
+  */
+void GPSPowerOff(void)
+{
+	GPIO_SetBits(GPS_PWR_CTRL_PORT, GPS_PWR_CTRL_PIN);
+}
+
 /*********************************************************************************************************
  ** Function name:       GPSInfoAnalyze
  ** Descriptions:        解析GPS数据
@@ -319,47 +392,6 @@ printf("\n");
 printf("STATUS: 0x%x\n", pGpsData->status);
 #endif
 	
-}
-
-
-int my_atoi_len(const char * str, const int len)
-{
-    int minus=0;
-    long long result=0;
-	int rst = 0;
-	int valid;
-    
-    if(str==NULL)
-        return 0;
-    while(*str==' ')
-        str++;
-    if(*str=='-')
-    {
-        minus=1;
-        str++;
-    }
-    else if(*str=='+')
-        str++;
-    if(*str<'0'||*str>'9')
-        return 0;
-
-    valid=1;
-    while((*str>='0' && *str<='9') && (rst < len))
-    {
-        result=result*10+*str-'0';
-        if((minus && result>INT_MAX + 1LL) || (!minus && result>INT_MAX))
-        {
-            valid=0;
-            return 0;
-        }
-
-        str++;
-		rst++;
-    }
-
-    if(minus)
-        result*=-1;
-    return (int)result;
 }
 
 

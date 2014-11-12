@@ -36,6 +36,24 @@ void TimingDelay_Decrement(void)
 }
 
 /**
+  * @brief  Delay Timer ms.
+  * @param  Timer: specifies the delay time length, in milliseconds.
+  * @retval None
+  */
+void delay_ms(uint32_t Timer)
+{
+    volatile uint32_t i=0;
+    uint32_t tickPerMs = SystemCoreClock/1000;
+
+    while(Timer)
+    {
+        i=tickPerMs/6-1;
+        while(i--);
+        Timer--;
+    }
+}
+
+/**
   * @brief  Configures the SysTick to generate an interrupt each 10 ms.
   * @param  None
   * @retval None
@@ -103,11 +121,37 @@ void RTC_Configuration(void)
 }
 
 /**
+  * @brief  Configures the TIM2.
+  * TIM_Prescaler = 1KHz; TIM_Period = 60s
+  * @param  None
+  * @retval None
+  */
+void TIM2_Configuration(void)
+{
+	uint16_t PrescalerValue = 0;
+    TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
+	PrescalerValue = (uint16_t) (SystemCoreClock / 1000) - 1;
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 , ENABLE);
+    TIM_DeInit(TIM2);
+    TIM_TimeBaseStructure.TIM_Period= (uint16_t)TIM2_PERIOD_TIMER;
+    // 累计 TIM_Period个频率后产生一个更新或者中断
+    TIM_TimeBaseStructure.TIM_Prescaler= PrescalerValue;
+    TIM_TimeBaseStructure.TIM_ClockDivision=TIM_CKD_DIV1;
+    TIM_TimeBaseStructure.TIM_CounterMode=TIM_CounterMode_Up;
+    TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
+    TIM_ClearFlag(TIM2, TIM_FLAG_Update);	// 清除溢出中断标志 
+    TIM_ITConfig(TIM2,TIM_IT_Update,ENABLE);
+    TIM_Cmd(TIM2, ENABLE);																		/* 开启时钟 */
+    
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 , DISABLE); // 先关闭等待使用   
+}
+
+/**
   * @brief  Configures the NVIC.
   * @param  None
   * @retval None
   */
-void NVIC_Configuration(void)
+void RTC_NVIC_Configuration(void)
 {  
 NVIC_InitTypeDef NVIC_InitStructure;  /*设置先占优先级1位，从占优先级3位*/  
 NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);  /*选择RTC的IRQ通道*/   
@@ -119,6 +163,45 @@ NVIC_Init(&NVIC_InitStructure);
 
 }
 
+/*
+ * 函数名：TIM2_NVIC_Configuration
+ * 描述  ：TIM2中断优先级配置
+ * 输入  ：无
+ * 输出  ：无	
+ */
+void TIM2_NVIC_Configuration(void)
+{
+    NVIC_InitTypeDef NVIC_InitStructure; 
+    
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);  													
+    NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;	  
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;	
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+}
+
+/**
+  * @brief  Start timer2
+  * @param  None
+  * @retval None
+  */
+void TIM2_Start(void)
+{
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 , ENABLE);
+	TIM_Cmd(TIM2, ENABLE);
+}
+
+/**
+  * @brief  Stop timer2
+  * @param  None
+  * @retval None
+  */
+void TIM2_Stop(void)
+{
+	TIM_Cmd(TIM2, DISABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 , DISABLE);
+}
 
 /**
   * @brief  Configures the WatchDog.
@@ -148,7 +231,7 @@ void IWDG_Configuration(void)
   */
 void stm32gps_led_cfg(void)
 {
-    STM_EVAL_LEDInit_Test(LED1);
+    STM_EVAL_LEDInit(LED1);
     //STM_EVAL_LEDInit(LED2);
     //STM_EVAL_LEDInit(LED3);
     //STM_EVAL_LEDInit(LED4);

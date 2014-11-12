@@ -1,22 +1,12 @@
 /**
   ******************************************************************************
-  * @file    stm3210c_eval.h
+  * @file    stm32_gps_board.h
   * @author  MCD Application Team
   * @version V4.5.0
   * @date    07-March-2011
   * @brief   This file contains definitions for STM3210C_EVAL's Leds, push-buttons
   *          COM ports, SD Card on SPI and sEE on I2C hardware resources.
   ******************************************************************************
-  * @attention
-  *
-  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
-  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
-  * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
-  * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
-  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
-  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
-  *
-  * <h2><center>&copy; COPYRIGHT 210 STMicroelectronics</center></h2>
   */ 
   
 /* Define to prevent recursive inclusion -------------------------------------*/
@@ -30,13 +20,15 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32gps_board.h"
 
-/** @defgroup STM3210C_EVAL_LOW_LEVEL_Exported_Constants
-  * @{
-  */ 
+#define GPS_PWR_CTRL_PORT	GPIOC	
+#define GPS_PWR_CTRL_PIN	GPIO_Pin_11
 
-/** @addtogroup STM3210C_EVAL_LOW_LEVEL_LED
-  * @{
-  */
+#define GSM_PWR_CTRL_PORT	GPIOC
+#define GSM_PWR_CTRL_PIN	GPIO_Pin_9
+
+#define GSM_PWRKEY_PORT		GPIOC
+#define GSM_PWRKEY_PIN		GPIO_Pin_10
+
 #define LEDn                             4
 
 #define LED1_PIN                         GPIO_Pin_3

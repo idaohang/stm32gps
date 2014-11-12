@@ -24,7 +24,7 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32_sim908_board.h"
+#include "stm32gps_board.h"
 #include "stm32f10x_it_api.h"
 #include "usart.h"
 
@@ -150,21 +150,6 @@ void STM_EVAL_LEDInit(Led_TypeDef Led)
     GPIO_Init(GPIO_PORT[Led], &GPIO_InitStructure);
 }
 
-void STM_EVAL_LEDInit_Test(Led_TypeDef Led)
-{
-    GPIO_InitTypeDef GPIO_InitStructure;
-
-    /* Enable the GPIO_LED Clock */
-    RCC_APB2PeriphClockCmd(GPIO_CLK[Led] | RCC_APB2Periph_AFIO, ENABLE);
-	GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
-
-    /* Configure the GPIO_LED pin */
-    GPIO_InitStructure.GPIO_Pin = GPIO_PIN[Led];
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-
-    GPIO_Init(GPIO_PORT[Led], &GPIO_InitStructure);
-}
 
 /**
  * @brief  Turns selected LED On.

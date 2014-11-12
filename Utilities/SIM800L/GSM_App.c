@@ -31,6 +31,9 @@
 #include "usart.h"
 #include "GSM_App.h"
 
+#define RESEND_TIMES_CPIN   3
+#define RESEND_TIMES_COPS   5
+
 static char BackBuf[USART_GSM_BUFSIZE];
 static char sendBuf[USART_GSM_BUFSIZE_SEND];
 static char receiveBuf[USART_GSM_BUFSIZE_RECEIVE];
@@ -307,19 +310,41 @@ void GSM_PowerCtrlInit(void)
     GPIO_Init(GPIOC, &GPIO_InitStructure);
 }
 
+/**
+  * @brief  Turn on GSM's VCC power.
+  * Output LOW to Turn Off VCC Power; HIGH to Turn On VCC Power.
+  * @param  None
+  * @retval None
+  */
+void GSM_PowerOn(void)
+{
+    GPIO_SetBits(GSM_PWR_CTRL_PORT, GSM_PWR_CTRL_PIN);
+}
+
+/**
+  * @brief  Turn off GSM's VCC power.
+  * Output LOW to Turn Off VCC Power; HIGH to Turn On VCC Power.
+  * @param  None
+  * @retval None
+  */
+void GSM_PowerOff(void)
+{
+    GPIO_ResetBits(GSM_PWR_CTRL_PORT, GSM_PWR_CTRL_PIN);
+}
+
 /*********************************************************************************************************
- ** Function name:       GSM_PowerOnOff()
+ ** Function name:       GSM_TurnOnOff()
  ** Descriptions:        启动或关闭模块
  ** input parameters:    NONE
  ** output parameters:   NONE
  ** Returned value:
  *********************************************************************************************************/
-void GSM_PowerOnOff(void)
+void GSM_TurnOnOff(void)
 {
-    GPIO_ResetBits(GPIOC, GPIO_Pin_10);
-    delay_10ms(300);
-    GPIO_SetBits(GPIOC, GPIO_Pin_10);
-    delay_10ms(300);
+    GPIO_ResetBits(GSM_PWRKEY_PORT, GSM_PWRKEY_PIN);
+    delay_ms(3000);
+    GPIO_SetBits(GSM_PWRKEY_PORT, GSM_PWRKEY_PIN);
+    delay_ms(3000);
 }
 
 /*********************************************************************************************************
@@ -870,9 +895,10 @@ unsigned char GSM_SendSMS(char *pNumb, char *pSMS, unsigned char type)
     }
     return USART_FAIL;
 }
+
 /*********************************************************************************************************
- ** Function name:       GSM_Init
- ** Descriptions:        GSM初始化
+ ** Function name:       GSM_simcard_Init
+ ** Descriptions:        SIM CARD初始化
  ** input parameters:    NONE
  ** output parameters:   NONE
  ** Returned value:      NONE
@@ -885,16 +911,16 @@ void GSM_simcard_Init(void)
     //查询卡状态
     i = 0;
     len = strlen(AT_CPIN);
-    while (USART_SUCESS != GSM_SendAT((char *) AT_CPIN, (char *) "READY", len))
+    while (USART_SUCESS != GSM_SendAT((char *) AT_CPIN, (char *)AT_READY, len))
     {
         delay_10ms(20);
         i++;
-#if 0
-        if (i > 2)
+
+        if (i > RESEND_TIMES_CPIN)
         {
             break;
         }
-#endif
+
     }
     i = 0;
     GSMNetType = USART_FAIL;
@@ -902,10 +928,12 @@ void GSM_simcard_Init(void)
     while (USART_FAIL == GSMNetType)
     {
         GSMNetType = GSM_QueryNetType();
-#if 0
-        if (i++ > 5)
+		i++;
+		
+        if (i > RESEND_TIMES_COPS)
+        {
             break;
-#endif
+        }
     }
 	
 }
@@ -927,20 +955,19 @@ void GSM_Init(void)
     unsigned char i = 0;
     unsigned char len;
 
-    GSM_PowerCtrlInit();
-    GSM_RingPinInit();
-//	GSM_PowerOnOff();											
+    //GSM_PowerCtrlInit();
+    //GSM_RingPinInit();
+	//GSM_TurnOnOff();											
 
     // AT握手
     len = strlen(AT_Cmd);
-
     while (USART_SUCESS != GSM_SendAT((char *) AT_Cmd, (char *) AT_OK, len))
     {
-        delay_10ms(30);
+        delay_ms(300);
         i++;
         if (i > 2)
         {
-            GSM_PowerOnOff();
+            GSM_TurnOnOff();
             i = 0;
         }
     }
@@ -949,7 +976,7 @@ void GSM_Init(void)
     len = strlen(ATE0_Cmd);
     GSM_SendAT((char *) ATE0_Cmd, (char *) AT_OK, len);
 
-    GSM_simcard_Init();
+    //GSM_simcard_Init();
     //GPS_Init();
 }
 /*********************************************************************************************************

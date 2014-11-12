@@ -1,85 +1,39 @@
 /**
   ******************************************************************************
-  * @file    stm3210c_eval.h
+  * @file    stm32_gps_board.h
   * @author  MCD Application Team
   * @version V4.5.0
   * @date    07-March-2011
   * @brief   This file contains definitions for STM3210C_EVAL's Leds, push-buttons
   *          COM ports, SD Card on SPI and sEE on I2C hardware resources.
   ******************************************************************************
-  * @attention
-  *
-  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
-  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
-  * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
-  * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
-  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
-  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
-  *
-  * <h2><center>&copy; COPYRIGHT 210 STMicroelectronics</center></h2>
   */ 
   
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32_SIM908_BOARD_H
-#define __STM32_SIM908_BOARD_H
-
-#include "stm32f10x.h"
+#ifndef __STM32_GPS_BOARD_H
+#define __STM32_GPS_BOARD_H
 
 #ifdef __cplusplus
  extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
- typedef enum
- {
-   LED1 = 0,
-   LED2 = 1,
-   LED3 = 2,
-   LED4 = 3
- } Led_TypeDef;
+#include "stm32gps_board.h"
 
- typedef enum
- {
-   COM1_GPS = 0,
-   COM2_GSM = 1,
-   COM3_DEBUG = 2
- } COM_TypeDef;
+#define GPS_PWR_CTRL_PORT	GPIOC	
+#define GPS_PWR_CTRL_PIN	GPIO_Pin_11
 
-/** @addtogroup Utilities
-  * @{
-  */
+#define GSM_PWR_CTRL_PORT	GPIOC
+#define GSM_PWR_CTRL_PIN	GPIO_Pin_9
 
-/** @addtogroup STM32_EVAL
-  * @{
-  */
-    
-/** @addtogroup STM3210C_EVAL
-  * @{
-  */ 
+#define GSM_PWRKEY_PORT		GPIOA
+#define GSM_PWRKEY_PIN		GPIO_Pin_1
 
-/** @addtogroup STM3210C_EVAL_LOW_LEVEL
-  * @{
-  */ 
-  
-/** @defgroup STM3210C_EVAL_LOW_LEVEL_Exported_Types
-  * @{
-  */
-/**
-  * @}
-  */ 
-
-/** @defgroup STM3210C_EVAL_LOW_LEVEL_Exported_Constants
-  * @{
-  */ 
-
-/** @addtogroup STM3210C_EVAL_LOW_LEVEL_LED
-  * @{
-  */
 #define LEDn                             4
 
-#define LED1_PIN                         GPIO_Pin_3
-#define LED1_GPIO_PORT                   GPIOB
-#define LED1_GPIO_CLK                    RCC_APB2Periph_GPIOB
+#define LED1_PIN                         GPIO_Pin_12
+#define LED1_GPIO_PORT                   GPIOC
+#define LED1_GPIO_CLK                    RCC_APB2Periph_GPIOC
   
 #define LED2_PIN                         GPIO_Pin_5
 #define LED2_GPIO_PORT                   GPIOB
@@ -154,7 +108,7 @@
 /** @defgroup STM3210C_EVAL_LOW_LEVEL_Exported_Functions
   * @{
   */ 
-  void STM_EVAL_LEDInit_Test(Led_TypeDef Led);
+void STM_EVAL_LEDInit_Test(Led_TypeDef Led);
 void STM_EVAL_LEDInit(Led_TypeDef Led);
 void STM_EVAL_LEDOn(Led_TypeDef Led);
 void STM_EVAL_LEDOff(Led_TypeDef Led);
@@ -168,7 +122,7 @@ void STM_EVAL_COMInit(COM_TypeDef COM, USART_InitTypeDef* USART_InitStruct);
 }
 #endif
 
-#endif /* __STM32_SIM908_BOARD_H */
+#endif /* __STM32_GPS_BOARD_H */
 /**
   * @}
   */ 

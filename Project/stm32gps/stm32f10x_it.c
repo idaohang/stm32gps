@@ -211,11 +211,31 @@ void RTC_IRQHandler(void)
 
 	RTC_ClearITPendingBit(RTC_IT_SEC|RTC_IT_ALR);  
 	RTC_WaitForLastTask(); 
-	STM_EVAL_LEDToggle(LED1);
+	//STM_EVAL_LEDToggle(LED1);
 	/* Set the RTC Alarm after 5s */
-	RTC_SetAlarm(RTC_GetCounter()+ 5);
+	//RTC_SetAlarm(RTC_GetCounter()+ 5);
 	/* Wait until last write operation on RTC registers has finished */
-	RTC_WaitForLastTask();
+	//RTC_WaitForLastTask();
+}
+
+void TIM2_IRQHandler(void)
+{
+	if ( TIM_GetITStatus(TIM2 , TIM_IT_Update) != RESET ) 
+	{	
+		TIM_ClearITPendingBit(TIM2 , TIM_FLAG_Update);
+		
+		/* Wait till RTC Second event occurs */
+		RTC_ClearFlag(RTC_FLAG_SEC);
+		while(RTC_GetFlagStatus(RTC_FLAG_SEC) == RESET);
+		
+		/* Set the RTC Alarm after xx s */
+		RTC_SetAlarm(RTC_GetCounter()+ SLEEP_SEC_INTIMER);
+		/* Wait until last write operation on RTC registers has finished */
+		RTC_WaitForLastTask();
+		
+		/* Request to enter STANDBY mode (Wake Up flag is cleared in PWR_EnterSTANDBYMode function) */
+		PWR_EnterSTANDBYMode();
+	}		 	
 }
 
 /******************************************************************************/

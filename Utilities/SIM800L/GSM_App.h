@@ -59,6 +59,18 @@ typedef struct
 	unsigned char Signal[2];		// signal
 }ST_SIMDATA, *pST_SIMDATA;
 
+typedef     struct
+{       /* date and time components */
+    signed char     Sec;
+    signed char     Min;
+    signed char     Hour;
+    signed char     Day;
+    signed char     Month;
+    signed char     Year;
+    signed char     Week;
+    signed char     Timezone;
+}ST_RTCTIME, *pST_RTCTIME;
+
 
 extern unsigned char GSMSinal;
 extern unsigned char GSMNetType;
@@ -71,7 +83,7 @@ extern volatile unsigned char SMSingRing;
 char *strstr_len(char *str, char *subStr, uint32_t strlenth);
 char *strnchr(char *S, int C, int n);
 unsigned char GSM_ChkRingSta(void);
-void GSM_PowerOnOff(void);
+void GSM_TurnOnOff(void);
 void GSM_ClearBuffer(void);
 unsigned char GSM_SendAT(char *pCMD, char *pCMDBack, uint32_t CMDLen);
 unsigned char GSM_SendAT_rsp(char *pCMD, char *pCMDBack,
@@ -88,23 +100,12 @@ unsigned char GSM_QueryCallStatus(void);
 unsigned char GSM_HangCall(void);
 unsigned char GSM_AnswerCall(void);
 
-typedef     struct
-{       /* date and time components */
-    signed char     Sec;
-    signed char     Min;
-    signed char     Hour;
-    signed char     Day;
-    signed char     Month;
-    signed char     Year;
-    signed char     Week;
-    signed char     Timezone;
-}ST_RTCTIME, *pST_RTCTIME;
-
 unsigned char GSM_GetRTCTime(pST_RTCTIME prtctime);
 unsigned char GSM_SetRTCTime(ST_RTCTIME rtctime);
 unsigned char GSM_SendSMS(char *pNumb, char *pSMS, unsigned char type);
 
 void GSM_Init(void);
+void GSM_simcard_Init(void);
 void GPRS_Init(void);
 void GPRS_Init_Interface(void);
 unsigned char GPRS_LinkServer(pST_NETWORKCONFIG pnetconfig);

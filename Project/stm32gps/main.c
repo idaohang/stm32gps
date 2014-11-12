@@ -381,36 +381,69 @@ int main(void)
     ST_GPSRMCINFO rmc;
 	unsigned char errNum = 0;
 
+	/////////////////////////////////////////////////////////////////
+	// Configure the GPIO ports
+	/////////////////////////////////////////////////////////////////
+	MX_GPIO_Init();
+	/////////////////////////////////////////////////////////////////
+	// Power ON GPS and GSM
+	/////////////////////////////////////////////////////////////////
+	GPSPowerOn();
+	GSM_PowerOn();
+	/////////////////////////////////////////////////////////////////
+	// Configure the SysTick
+	/////////////////////////////////////////////////////////////////
 	stm32gps_sys_tick_cfg();
+	/////////////////////////////////////////////////////////////////
+	// Configure PWR and BKP
+	/////////////////////////////////////////////////////////////////
 	/* Enable PWR and BKP clock */
-  RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
-
-  /* Enable WKUP pin */
-  PWR_WakeUpPinCmd(ENABLE);
-
-  /* Allow access to BKP Domain */
-  PWR_BackupAccessCmd(ENABLE);
+  	RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
+  	/* Enable WKUP pin */
+  	PWR_WakeUpPinCmd(ENABLE);
+  	/* Allow access to BKP Domain */
+  	PWR_BackupAccessCmd(ENABLE);
+	/////////////////////////////////////////////////////////////////
+	// Configure RTC
+	/////////////////////////////////////////////////////////////////
 	RTC_Configuration();
-	NVIC_Configuration();
-	IWDG_Configuration();
-    
+	RTC_NVIC_Configuration();
+	//IWDG_Configuration();
+	/////////////////////////////////////////////////////////////////
+	// Configure TIMER
+	/////////////////////////////////////////////////////////////////
+	TIM2_Configuration();
+	TIM2_NVIC_Configuration();
+
+	/////////////////////////////////////////////////////////////////
+	// Configure LED and USART(GPS + GSM + DEBUG)
+	/////////////////////////////////////////////////////////////////
     stm32gps_led_cfg();
 	STM_EVAL_LEDOff(LED1);
 
     stm32gps_com_debug_cfg();
-#if 0
+
     usart_init(STM32_SIM908_GPS_COM);
     stm32gps_com_gps_cfg();
 
     usart_init(STM32_SIM908_GSM_COM);
     stm32gps_com_gsm_cfg();
 
+	/////////////////////////////////////////////////////////////////
+	// Tuen On TIMER
+	/////////////////////////////////////////////////////////////////
+	TIM2_Start();
+	/////////////////////////////////////////////////////////////////
+	// Init Variables
+	/////////////////////////////////////////////////////////////////
 	InitVariables();
-    GSM_Init();
-
+    
 while(1)
 {
+	// reset sequence to 1
 	g_seq = 1;
+	GSM_Init();
+	GSM_simcard_Init();
 	
 	GPRS_Init_Interface();
 	
@@ -469,7 +502,7 @@ while(1)
 		delay_10ms(100);
     }
 }
-#endif
+
 #if 0
 printf("this being in standby mode\n");
 delay_10ms(100);
@@ -485,29 +518,7 @@ RTC_WaitForLastTask();
 /* Request to enter STANDBY mode (Wake Up flag is cleared in PWR_EnterSTANDBYMode function) */
 PWR_EnterSTANDBYMode();
 #endif
-/* Check if the system has resumed from IWDG reset */
-  if (RCC_GetFlagStatus(RCC_FLAG_IWDGRST) != RESET)
-  {
-    /* IWDGRST flag set */
-    /* Turn on LED1 */
-    STM_EVAL_LEDOn(LED1);
 
-    /* Clear reset flags */
-    RCC_ClearFlag();
-	printf("Resume from iwdg\n");
-  }
-  else
-  {
-    /* IWDGRST flag is not set */
-    /* Turn off LED1 */
-    STM_EVAL_LEDOff(LED1);
-	printf("NOT Resume from iwdg\n");
-  }
-  
-  /* Reload IWDG counter */
-  IWDG_ReloadCounter();
-	/* Enable IWDG (the LSI oscillator will be enabled by hardware) */
-  IWDG_Enable();
 while(1)
 {
 	STM_EVAL_LEDToggle(LED1);
@@ -516,7 +527,7 @@ while(1)
 	printf("i = %d\n", i);
 	if(i < 20)
 	{
-		IWDG_ReloadCounter();
+		//IWDG_ReloadCounter();
 	}
 }
 
