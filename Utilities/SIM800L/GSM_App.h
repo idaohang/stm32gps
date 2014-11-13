@@ -40,6 +40,16 @@ typedef struct
 
 typedef struct
 {
+	unsigned char	Status;		//是否有效 0无效，1有效
+	union
+	{
+		unsigned char s[2];
+		unsigned short  i;     // 电池电压mV
+	}BatVoltage;
+}ST_BATVOLTAGESTATUS, *pST_BATVOLTAGESTATUS;
+
+typedef struct
+{
 	char Mcc[2];		// 国家代码
 	char Mnc[2];		// 网络代码
 }ST_IMSIINFO, *pST_IMSIINFO;
@@ -83,6 +93,8 @@ extern volatile unsigned char SMSingRing;
 char *strstr_len(char *str, char *subStr, uint32_t strlenth);
 char *strnchr(char *S, int C, int n);
 unsigned char GSM_ChkRingSta(void);
+void GSM_PowerOn(void);
+void GSM_PowerOff(void);
 void GSM_TurnOnOff(void);
 void GSM_ClearBuffer(void);
 unsigned char GSM_SendAT(char *pCMD, char *pCMDBack, uint32_t CMDLen);
@@ -105,7 +117,15 @@ unsigned char GSM_SetRTCTime(ST_RTCTIME rtctime);
 unsigned char GSM_SendSMS(char *pNumb, char *pSMS, unsigned char type);
 
 void GSM_Init(void);
-void GSM_simcard_Init(void);
+void GSM_CheckSIMCard(void);
+void GSM_CheckNetworkReg(void);
+void GSM_SetNetworkReg(void);
+void GSM_SetCIPMode(void);
+void GSM_CheckGPRSService(void);
+void GSM_StartTaskAndSetAPN(void);
+void GSM_BringUpConnect(void);
+void GSM_GetLocalIP(void);
+void GSM_StartUpConnect(void);
 void GPRS_Init(void);
 void GPRS_Init_Interface(void);
 unsigned char GPRS_LinkServer(pST_NETWORKCONFIG pnetconfig);
@@ -114,7 +134,7 @@ unsigned char GPRS_CIPShut(void);
 unsigned char GPRS_SendData(char *pString, unsigned int len);
 unsigned char GSM_QueryBattery(pST_BATTERYSTATUS pSig);
 
-void GetGsmData(pST_SIMDATA pSimData);
+void GetGsmData(pST_SIMDATA pSimData, ST_IMSIINFO imsi);
 
 void GSM_test_once(void);
 void GSM_test(void);

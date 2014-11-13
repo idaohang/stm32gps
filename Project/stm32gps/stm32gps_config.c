@@ -130,7 +130,7 @@ void TIM2_Configuration(void)
 {
 	uint16_t PrescalerValue = 0;
     TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-	PrescalerValue = (uint16_t) (SystemCoreClock / 1000) - 1;
+	PrescalerValue = (uint16_t) (SystemCoreClock / TIM2_PRESCALER_TIMER) - 1;
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 , ENABLE);
     TIM_DeInit(TIM2);
     TIM_TimeBaseStructure.TIM_Period= (uint16_t)TIM2_PERIOD_TIMER;

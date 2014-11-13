@@ -51,8 +51,6 @@ typedef struct
 /* Private variables ---------------------------------------------------------*/
 __IO uint32_t LsiFreq = 40000;
 
-uint16_t g_seq;  // packet's sequence
-
 // sim and gps information
 uint8_t imeiBuf[IMEI_INFO_LEN];  // imei information buffer
 
@@ -65,11 +63,18 @@ char gpsBuf[PROTO_GPS_BUF];
 ST_SIMDATA g_simData;
 ST_GPSDATA g_gpsData;
 ST_DEVICEDATA g_deviceData;
+ST_IMSIINFO g_imsiInfo;
 
+uint16_t g_sequenceNum;  // packet's sequence
+uint16_t g_successNum;
 
 
 /* Private function prototypes -----------------------------------------------*/
-
+uint8_t ProcessIMEI(uint8_t *pImei, uint8_t *pRst, int32_t imeilen, int32_t rstlen);
+void loadLoginMsg(uint8_t *imei, uint16_t sequence);
+void PackLoginMsg(void);
+void LoadGpsMsg(uint16_t sequence);
+void PackGpsMsg(void);
 /* Private functions ---------------------------------------------------------*/
 
 
@@ -116,11 +121,11 @@ void ShowGpsMsg(void)
 void InitVariables(void)
 {
 	uint32_t i;
-	g_seq = 1;
-	for(i = 0; i < IMEI_INFO_LEN; i++)
-	{
-		imeiBuf[i] = 0;
-	}
+	
+	g_sequenceNum = 1;
+	g_successNum = 0;
+	
+	memset(imeiBuf, sizeof(imeiBuf), 0);
 	for(i = 0; i < PROTO_LOGIN_BUF; i++)
 	{
 		loginBuf[i] = 0;
@@ -137,6 +142,245 @@ void InitVariables(void)
 	memset(&g_gpsData, sizeof(g_gpsData), 0);
 	memset(&g_deviceData, sizeof(g_deviceData), 0);
 	
+}
+
+
+/**
+ * @brief  Main program
+ * @param  None
+ * @retval None
+ */
+int main(void) 
+{
+//	int i = 0;
+    ST_GPSRMCINFO rmc;
+	unsigned char errNum = 0;
+
+	/////////////////////////////////////////////////////////////////
+	// Configure the GPIO ports
+	/////////////////////////////////////////////////////////////////
+	MX_GPIO_Init();
+	/////////////////////////////////////////////////////////////////
+	// Power ON GPS and GSM
+	/////////////////////////////////////////////////////////////////
+//	GPSPowerOn();
+//	GSM_PowerOn();
+	/////////////////////////////////////////////////////////////////
+	// Configure the SysTick
+	/////////////////////////////////////////////////////////////////
+	stm32gps_sys_tick_cfg();
+	/////////////////////////////////////////////////////////////////
+	// Configure PWR and BKP
+	/////////////////////////////////////////////////////////////////
+	/* Enable PWR and BKP clock */
+  	RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
+  	/* Enable WKUP pin */
+  	PWR_WakeUpPinCmd(ENABLE);
+  	/* Allow access to BKP Domain */
+  	PWR_BackupAccessCmd(ENABLE);
+	/////////////////////////////////////////////////////////////////
+	// Configure RTC
+	/////////////////////////////////////////////////////////////////
+	RTC_Configuration();
+	RTC_NVIC_Configuration();
+	//IWDG_Configuration();
+	/////////////////////////////////////////////////////////////////
+	// Configure TIMER
+	/////////////////////////////////////////////////////////////////
+	TIM2_Configuration();
+	TIM2_NVIC_Configuration();
+
+	/////////////////////////////////////////////////////////////////
+	// Configure LED and USART(GPS + GSM + DEBUG)
+	/////////////////////////////////////////////////////////////////
+    stm32gps_led_cfg();
+	STM_EVAL_LEDOff(LED1);
+
+    stm32gps_com_debug_cfg();
+
+    usart_init(STM32_SIM908_GPS_COM);
+    stm32gps_com_gps_cfg();
+
+    usart_init(STM32_SIM908_GSM_COM);
+    stm32gps_com_gsm_cfg();
+
+	/////////////////////////////////////////////////////////////////
+	// Tuen On TIMER
+	/////////////////////////////////////////////////////////////////
+	TIM2_Start();
+	/////////////////////////////////////////////////////////////////
+	// Init Variables
+	/////////////////////////////////////////////////////////////////
+	InitVariables();
+#if 1    
+while(1)
+{
+	// reset sequence to 1
+	g_sequenceNum = 1;
+	g_successNum = 0;
+	/////////////////////////////////////////////////////////////////
+	// While loop to handshake with SIM800L module
+	/////////////////////////////////////////////////////////////////
+	GSM_Init();
+	/////////////////////////////////////////////////////////////////
+	// While loop to check sim card status
+	/////////////////////////////////////////////////////////////////
+	GSM_CheckSIMCard();
+	/////////////////////////////////////////////////////////////////
+	// While loop to check network registration status
+	/////////////////////////////////////////////////////////////////
+	GSM_CheckNetworkReg();
+	/////////////////////////////////////////////////////////////////
+	// While loop to check Attach or Detach from GPRS Service
+	/////////////////////////////////////////////////////////////////
+	GSM_CheckGPRSService();
+	/////////////////////////////////////////////////////////////////
+	// While loop to set network registration 
+	// 2 Enable network registration unsolicited result code with
+	// location information +CREG: <stat>[,<lac>,<ci>]
+	/////////////////////////////////////////////////////////////////
+	GSM_SetNetworkReg();
+	/////////////////////////////////////////////////////////////////
+	// While loop to Set CIPMODE
+	/////////////////////////////////////////////////////////////////
+	GSM_SetCIPMode();
+	/////////////////////////////////////////////////////////////////
+	// While loop to Start task and Set APN "CMNET"
+	/////////////////////////////////////////////////////////////////
+	GSM_StartTaskAndSetAPN();
+	/////////////////////////////////////////////////////////////////
+	// While loop to Bring Up Wireless Connection
+	/////////////////////////////////////////////////////////////////
+	GSM_BringUpConnect();
+	/////////////////////////////////////////////////////////////////
+	// While loop to Get Local IP Address
+	/////////////////////////////////////////////////////////////////
+	GSM_GetLocalIP();
+	/////////////////////////////////////////////////////////////////
+	// While loop to Start Up TCP or UDP Connection
+	/////////////////////////////////////////////////////////////////
+	GSM_StartUpConnect();
+
+	/////////////////////////////////////////////////////////////////
+	// Query SIM IMEI and Package LOGIN Message
+	/////////////////////////////////////////////////////////////////
+	while(USART_SUCESS != GSM_QueryImei(imeiBuf));
+	loadLoginMsg(imeiBuf, g_sequenceNum);
+	PackLoginMsg();
+
+	/////////////////////////////////////////////////////////////////
+	// While loop to Send LOGIN Message
+	/////////////////////////////////////////////////////////////////
+	while(USART_SUCESS != GPRS_SendData(loginBuf, EELINK_LOGIN_MSGLEN))
+	{
+		STM_EVAL_LEDToggle(LED1);
+		printf("GPRS_SendData LOGIN MSG Fail\n");
+	}
+
+	/////////////////////////////////////////////////////////////////
+	// Query SIM IMSI and Analyze
+	/////////////////////////////////////////////////////////////////
+	while(USART_SUCESS != GSM_QueryImsi(&g_imsiInfo));
+
+	/////////////////////////////////////////////////////////////////
+	// While loop to Send GPS Message
+	/////////////////////////////////////////////////////////////////
+    while(1)
+    {
+		/////////////////////////////////////////////////////////////////
+		// Receive GPS Data and Analyze
+		/////////////////////////////////////////////////////////////////
+		if( GPS_SUCCESS != GPSInfoAnalyze(&rmc))
+		{
+			printf("GPS Recv Error!\n");
+		}
+		else
+		{
+			memset(&rmc, sizeof(rmc), 0);
+		}
+		
+		ParseGPSInfo(rmc, &g_gpsData);
+		/////////////////////////////////////////////////////////////////
+		// Get GSM related Data and Analyze, Package GPS Message
+		/////////////////////////////////////////////////////////////////
+		GetGsmData(&g_simData, g_imsiInfo);
+		LoadGpsMsg(g_sequenceNum);
+		PackGpsMsg();
+
+		/////////////////////////////////////////////////////////////////
+		//Send GPS Message, 
+		/////////////////////////////////////////////////////////////////
+		if(USART_FAIL == GPRS_SendData(gpsBuf, EELINK_GPS_MSGLEN))
+		{
+			STM_EVAL_LEDToggle(LED1);
+			errNum++;
+			if(errNum > 10)
+			{
+				errNum = 0;
+				GPRS_CloseLink();
+				GPRS_CIPShut();
+				break;
+			}
+			printf("GPRS_SendData Fail\n");
+		}
+
+		// Increase success number
+		g_successNum++;
+		// if send ok then into sleep
+		if(g_successNum > SEND_SUCCESS_TIMES)
+		{
+			break;
+		}
+
+	ShowGpsMsg();
+
+		// Increase sequence number if overflow then re-init
+		g_sequenceNum++;
+		if(g_sequenceNum == 0)
+		{
+			g_sequenceNum = 1;
+		}
+		delay_ms(100);
+    }
+	
+	// if send ok then into sleep
+	if(g_successNum > SEND_SUCCESS_TIMES)
+	{
+		break;
+	}
+}
+#endif
+	/////////////////////////////////////////////////////////////////
+	// This Process is Finished, Then goto sleep
+	/////////////////////////////////////////////////////////////////
+	printf("this being in normal standby mode\n");
+#if 0
+	printf("this being in standby mode\n");
+	delay_10ms(100);
+	GPSPowerOff();
+	GSM_PowerOff();
+	/* Wait till RTC Second event occurs */
+	RTC_ClearFlag(RTC_FLAG_SEC);
+	while(RTC_GetFlagStatus(RTC_FLAG_SEC) == RESET);
+
+	/* Set the RTC Alarm after xxs */
+	RTC_SetAlarm(RTC_GetCounter()+ NORMAL_SEC_INTIMER);
+	/* Wait until last write operation on RTC registers has finished */
+	RTC_WaitForLastTask();
+
+	/* Request to enter STANDBY mode (Wake Up flag is cleared in PWR_EnterSTANDBYMode function) */
+	PWR_EnterSTANDBYMode();
+#endif
+
+	/////////////////////////////////////////////////////////////////
+	// Should NOT go to there
+	/////////////////////////////////////////////////////////////////
+	while(1)
+	{
+		//STM_EVAL_LEDToggle(LED1);
+		delay_10ms(100);
+	}
+
 }
 
 /*********************************************************************************************************
@@ -176,10 +420,12 @@ void loadLoginMsg(uint8_t *imei, uint16_t sequence)
 	loginMsg.hdr.seq[1] = (uint8_t)((sequence)& 0x00FF);
 	if(RST_FAIL == ProcessIMEI(imei, loginMsg.imei, IMEI_INFO_LEN, 8))
 	{
+		// re-init imei buffer
+		memset(loginMsg.imei, sizeof(loginMsg.imei), 0);
 		printf("IMEI process ERROR!\n");
 	}
-	loginMsg.lang = 0x00; // chinese
-	loginMsg.zone = 0x20; // east 8
+	loginMsg.lang = EELINK_LANG; // english
+	loginMsg.zone = EELINK_ZONE; // east 8
 }
 
 void PackLoginMsg(void)
@@ -213,7 +459,7 @@ void PackLoginMsg(void)
 	offset++;
 	loginBuf[offset] = loginMsg.zone;
 	offset++;
-	if(offset != (17))
+	if(offset != (EELINK_LOGIN_MSGLEN))
 	{
 		printf("PackLoginMsg ERROR!\n");
 	}
@@ -362,177 +608,11 @@ void PackGpsMsg(void)
 		offset++;
 	}
 	
-	if(offset != (42))
+	if(offset != (EELINK_GPS_MSGLEN))
 	{
 		printf("PackGpsMsg ERROR!\n");
 	}
 }
-
-
-
-/**
- * @brief  Main program
- * @param  None
- * @retval None
- */
-int main(void) 
-{
-	int i = 0;
-    ST_GPSRMCINFO rmc;
-	unsigned char errNum = 0;
-
-	/////////////////////////////////////////////////////////////////
-	// Configure the GPIO ports
-	/////////////////////////////////////////////////////////////////
-	MX_GPIO_Init();
-	/////////////////////////////////////////////////////////////////
-	// Power ON GPS and GSM
-	/////////////////////////////////////////////////////////////////
-	GPSPowerOn();
-	GSM_PowerOn();
-	/////////////////////////////////////////////////////////////////
-	// Configure the SysTick
-	/////////////////////////////////////////////////////////////////
-	stm32gps_sys_tick_cfg();
-	/////////////////////////////////////////////////////////////////
-	// Configure PWR and BKP
-	/////////////////////////////////////////////////////////////////
-	/* Enable PWR and BKP clock */
-  	RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
-  	/* Enable WKUP pin */
-  	PWR_WakeUpPinCmd(ENABLE);
-  	/* Allow access to BKP Domain */
-  	PWR_BackupAccessCmd(ENABLE);
-	/////////////////////////////////////////////////////////////////
-	// Configure RTC
-	/////////////////////////////////////////////////////////////////
-	RTC_Configuration();
-	RTC_NVIC_Configuration();
-	//IWDG_Configuration();
-	/////////////////////////////////////////////////////////////////
-	// Configure TIMER
-	/////////////////////////////////////////////////////////////////
-	TIM2_Configuration();
-	TIM2_NVIC_Configuration();
-
-	/////////////////////////////////////////////////////////////////
-	// Configure LED and USART(GPS + GSM + DEBUG)
-	/////////////////////////////////////////////////////////////////
-    stm32gps_led_cfg();
-	STM_EVAL_LEDOff(LED1);
-
-    stm32gps_com_debug_cfg();
-
-    usart_init(STM32_SIM908_GPS_COM);
-    stm32gps_com_gps_cfg();
-
-    usart_init(STM32_SIM908_GSM_COM);
-    stm32gps_com_gsm_cfg();
-
-	/////////////////////////////////////////////////////////////////
-	// Tuen On TIMER
-	/////////////////////////////////////////////////////////////////
-	TIM2_Start();
-	/////////////////////////////////////////////////////////////////
-	// Init Variables
-	/////////////////////////////////////////////////////////////////
-	InitVariables();
-    
-while(1)
-{
-	// reset sequence to 1
-	g_seq = 1;
-	GSM_Init();
-	GSM_simcard_Init();
-	
-	GPRS_Init_Interface();
-	
-
-	while(USART_SUCESS != GSM_QueryImei(imeiBuf));
-	loadLoginMsg(imeiBuf, g_seq);
-	PackLoginMsg();
-	
-	if(USART_FAIL == GPRS_SendData(loginBuf, 17))
-	{
-		STM_EVAL_LEDOn(LED1);
-		printf("GPRS_SendData Fail\n");
-	}
-
-	//ShowLoginMsg();
-
-    //GSM_SendSMS(targetNumber, targetMsg, 1);
-    while(1)
-    {
-		// gps data
-		if( GPS_SUCCESS != GPSInfoAnalyze(&rmc))
-		{
-			printf("GPS Recv Error!\n");
-		}
-		else
-		{
-			memset(&rmc, sizeof(rmc), 0);
-		}
-		ParseGPSInfo(rmc, &g_gpsData);
-		// sim data
-		GetGsmData(&g_simData);
-		
-		LoadGpsMsg(g_seq);
-		PackGpsMsg();
-
-		if(USART_FAIL == GPRS_SendData(gpsBuf, 42))
-		{
-			STM_EVAL_LEDToggle(LED1);
-			errNum++;
-			if(errNum > 10)
-			{
-				GPRS_CloseLink();
-				GPRS_CIPShut();
-				break;
-			}
-			printf("GPRS_SendData Fail\n");
-		}
-
-	ShowGpsMsg();
-	
-		g_seq++;
-		if(g_seq == 0)
-		{
-			g_seq = 1;
-		}
-		delay_10ms(100);
-    }
-}
-
-#if 0
-printf("this being in standby mode\n");
-delay_10ms(100);
-/* Wait till RTC Second event occurs */
-RTC_ClearFlag(RTC_FLAG_SEC);
-while(RTC_GetFlagStatus(RTC_FLAG_SEC) == RESET);
-
-/* Set the RTC Alarm after 6s */
-RTC_SetAlarm(RTC_GetCounter()+ 6);
-/* Wait until last write operation on RTC registers has finished */
-RTC_WaitForLastTask();
-
-/* Request to enter STANDBY mode (Wake Up flag is cleared in PWR_EnterSTANDBYMode function) */
-PWR_EnterSTANDBYMode();
-#endif
-
-while(1)
-{
-	STM_EVAL_LEDToggle(LED1);
-	delay_10ms(100);
-	i++;
-	printf("i = %d\n", i);
-	if(i < 20)
-	{
-		//IWDG_ReloadCounter();
-	}
-}
-
-}
-
 
 /**
  * @}

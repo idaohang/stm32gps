@@ -141,6 +141,7 @@ void STM_EVAL_LEDInit(Led_TypeDef Led)
 
     /* Enable the GPIO_LED Clock */
     RCC_APB2PeriphClockCmd(GPIO_CLK[Led] | RCC_APB2Periph_AFIO, ENABLE);
+	GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
 
     /* Configure the GPIO_LED pin */
     GPIO_InitStructure.GPIO_Pin = GPIO_PIN[Led];

@@ -11,6 +11,7 @@
 const char AT_Cmd[]     =   "AT\r";
 const char AT_OK[]      =   "OK";
 const char AT_READY[]   =   "READY";
+const char AT_CONNECTOK[]   =   "CONNECT OK";
 const char ATI_Cmd[]    =   "ATI\r";
 const char ATE0_Cmd[]   =   "ATE0\r";
 const char AT_CSQ[]     =   "AT+CSQ\r";
@@ -43,7 +44,8 @@ const char AT_CCLKSet[]	=		"AT+CCLK=\"%d%d/%d%d/%d%d,%d%d:%d%d:%d%d+%d%d\"\r";
 const char AT_CMGF[] 		= 	"AT+CMGF=%d\r";
 const char AT_CMGS[]    = 	"AT+CMGS=\"%s\"\r";
 const char AT_CMGSPDU[] = 	"AT+CMGS=%d\r";
-const char AT_CBC[] 		=		"AT+CBC\r";
+const char AT_CBC[] 	=		"AT+CBC\r";
+const char AT_CADC[] 	=		"AT+CADC?\r";
 const char AT_CIMI[]    = "AT+CIMI\r";
 const char AT_CSCLK_SET[]   = "AT+CSCLK=%d\r";
 

@@ -344,8 +344,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>393</TopLine>
-      <CurrentLine>402</CurrentLine>
+      <TopLine>203</TopLine>
+      <CurrentLine>215</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\main.c</PathWithFileName>
       <FilenameWithoutPath>main.c</FilenameWithoutPath>
@@ -589,7 +589,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>876</TopLine>
+      <TopLine>886</TopLine>
       <CurrentLine>892</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_usart.c</PathWithFileName>
@@ -722,7 +722,7 @@
       <Focus>0</Focus>
       <ColumnNumber>25</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>90</TopLine>
+      <TopLine>98</TopLine>
       <CurrentLine>104</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Utilities\USART\usart.c</PathWithFileName>
@@ -743,8 +743,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>120</TopLine>
-      <CurrentLine>127</CurrentLine>
+      <TopLine>68</TopLine>
+      <CurrentLine>75</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Utilities\SIM28M\GPS_App.c</PathWithFileName>
       <FilenameWithoutPath>GPS_App.c</FilenameWithoutPath>
@@ -764,8 +764,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>955</TopLine>
-      <CurrentLine>959</CurrentLine>
+      <TopLine>1093</TopLine>
+      <CurrentLine>1109</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Utilities\SIM800L\GSM_App.c</PathWithFileName>
       <FilenameWithoutPath>GSM_App.c</FilenameWithoutPath>
@@ -777,43 +777,25 @@
     <ActiveMDIGroup>0</ActiveMDIGroup>
     <MDIGroup>
       <Size>100</Size>
-      <ActiveTab>6</ActiveTab>
+      <ActiveTab>3</ActiveTab>
       <Documents>
         <Doc>
           <Name>..\main.c</Name>
           <ColumnNumber>0</ColumnNumber>
-          <TopLine>393</TopLine>
-          <CurrentLine>402</CurrentLine>
-        </Doc>
-        <Doc>
-          <Name>..\..\..\Utilities\SIM28M\GPS_App.c</Name>
-          <ColumnNumber>0</ColumnNumber>
-          <TopLine>120</TopLine>
-          <CurrentLine>127</CurrentLine>
+          <TopLine>203</TopLine>
+          <CurrentLine>215</CurrentLine>
         </Doc>
         <Doc>
           <Name>..\..\..\Utilities\SIM800L\GSM_App.c</Name>
           <ColumnNumber>0</ColumnNumber>
-          <TopLine>955</TopLine>
-          <CurrentLine>959</CurrentLine>
+          <TopLine>1093</TopLine>
+          <CurrentLine>1109</CurrentLine>
         </Doc>
         <Doc>
           <Name>..\..\..\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\arm\startup_stm32f10x_hd.s</Name>
           <ColumnNumber>0</ColumnNumber>
           <TopLine>151</TopLine>
           <CurrentLine>151</CurrentLine>
-        </Doc>
-        <Doc>
-          <Name>..\..\..\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_usart.c</Name>
-          <ColumnNumber>0</ColumnNumber>
-          <TopLine>876</TopLine>
-          <CurrentLine>892</CurrentLine>
-        </Doc>
-        <Doc>
-          <Name>..\..\..\Utilities\USART\usart.c</Name>
-          <ColumnNumber>25</ColumnNumber>
-          <TopLine>90</TopLine>
-          <CurrentLine>104</CurrentLine>
         </Doc>
         <Doc>
           <Name>..\stm32gps_config.c</Name>

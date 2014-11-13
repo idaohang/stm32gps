@@ -31,7 +31,7 @@
 #include "usart.h"
 #include "GSM_App.h"
 
-#define RESEND_TIMES_CPIN   3
+//#define RESEND_TIMES_CPIN   3
 #define RESEND_TIMES_COPS   5
 
 static char BackBuf[USART_GSM_BUFSIZE];
@@ -402,7 +402,7 @@ unsigned char GSM_SendAT(char *pCMD, char *pCMDBack, uint32_t CMDLen)
         while (--i)
         {
             len = USART_GSM_BUFSIZE;
-            delay_10ms(10);
+            delay_ms(100);
 
             //printf("GSM_SendAT before usart_readbuffer len %d\n", len);
 
@@ -478,7 +478,7 @@ unsigned char GSM_SendAT_rsp(char *pCMD, char *pCMDBack,
     while (--i)
     {
         len = USART_GSM_BUFSIZE;
-        delay_10ms(10);
+        delay_ms(100);
 
         //printf("GSM_SendAT before usart_readbuffer len %d\n", len);
         retFlag = usart_readbuffer(STM32_SIM908_GSM_COM, pBackBuf, &len);
@@ -593,13 +593,11 @@ unsigned char GSM_QuerySignal(unsigned char *pSig)
     return USART_FAIL;
 }
 
-/*********************************************************************************************************
- ** Function name:       GSM_QueryImei
- ** Descriptions:        查询IMEI
- ** input parameters:    NONE
- ** output parameters:   pImei
- ** Returned value:      返回状态结果
- *********************************************************************************************************/
+/**
+  * @brief  Request TA Serial Number Identification (IMEI)
+  * @param  pImei: pointer of IMEI
+  * @retval STATUS
+  */
 unsigned char GSM_QueryImei(uint8_t *pImei)
 {
     unsigned int cmdLen;
@@ -607,9 +605,10 @@ unsigned char GSM_QueryImei(uint8_t *pImei)
 	char *pRecvBuf = NULL;
     uint32_t recvLen = 0;
 
+#if 0
 	cmdLen = strlen(AT_GSN_TEST);
 	while (USART_SUCESS != GSM_SendAT((char *)AT_GSN_TEST, (char *)AT_OK, cmdLen));
-
+#endif
     cmdLen = strlen(AT_GSN);
     GSM_ClearBuffer();
     if (USART_SUCESS == GSM_SendAT_rsp((char *)AT_GSN, (char *)AT_OK, cmdLen, &pRecvBuf, &recvLen))
@@ -701,9 +700,9 @@ unsigned char GSM_QueryImsi(pST_IMSIINFO pImsiInfo)
 
 /*********************************************************************************************************
  ** Function name:       GSM_QueryCREG
- ** Descriptions:        查询IMSI
+ ** Descriptions:        Query Location information elements
  ** input parameters:    NONE
- ** output parameters:   pImsiInfo
+ ** output parameters:   pCregInfo
  ** Returned value:      返回状态结果
  *********************************************************************************************************/
 unsigned char GSM_QueryCreg(pST_CREGINFO pCregInfo)
@@ -714,12 +713,12 @@ unsigned char GSM_QueryCreg(pST_CREGINFO pCregInfo)
     uint32_t recvLen = 0;
     char *pStr = NULL;
 	char tmpbuf[2];
-
+#ifdef 0
     pcmdbuf = sendBuf;
     sprintf(pcmdbuf, AT_CREG_SET, 2);
     cmdLen = strlen(pcmdbuf);
     while (USART_SUCESS != GSM_SendAT((char *) pcmdbuf, (char *) AT_OK, cmdLen));
-
+#endif
 	cmdLen = strlen(AT_CREG);
 	GSM_ClearBuffer();
     if(USART_SUCESS == GSM_SendAT_rsp((char *)AT_CREG, (char *) "CREG",
@@ -783,6 +782,36 @@ unsigned char GSM_QueryCreg(pST_CREGINFO pCregInfo)
 		return USART_SUCESS;
     }
 
+    return USART_FAIL;
+}
+
+/**
+  * @brief  Read GSM's ADC
+  * @param  pSig
+  * @retval Status
+  */
+unsigned char GSM_QueryBatVoltage(pST_BATVOLTAGESTATUS pSig)
+{
+    unsigned int cmdLen;
+    static char *pfeed = NULL;
+
+    cmdLen = strlen(AT_CADC);
+    GSM_ClearBuffer();
+    if (USART_SUCESS == GSM_SendAT((char *) AT_CADC, (char *) AT_OK, cmdLen))
+    {
+        pfeed = strnchr(BackBuf, ',', 1);	//提取状态
+        if (pfeed == NULL)
+        {
+            return USART_FAIL;
+        }
+        pSig->Status = *(pfeed-1);
+
+		// 分压电阻是100K和200K
+		pfeed++;
+		pSig->BatVoltage.i= ((atoi(pfeed)*3)/2);
+		
+        return USART_SUCESS;
+    }
     return USART_FAIL;
 }
 
@@ -897,13 +926,13 @@ unsigned char GSM_SendSMS(char *pNumb, char *pSMS, unsigned char type)
 }
 
 /*********************************************************************************************************
- ** Function name:       GSM_simcard_Init
- ** Descriptions:        SIM CARD初始化
+ ** Function name:       GSM_CheckSIMCard
+ ** Descriptions:        Check SIM CARD, inifite while loop until sim card is OK, and query operator
  ** input parameters:    NONE
  ** output parameters:   NONE
  ** Returned value:      NONE
  *********************************************************************************************************/
-void GSM_simcard_Init(void)
+void GSM_CheckSIMCard(void)
 {
     uint32_t i;
     uint32_t len;
@@ -913,14 +942,15 @@ void GSM_simcard_Init(void)
     len = strlen(AT_CPIN);
     while (USART_SUCESS != GSM_SendAT((char *) AT_CPIN, (char *)AT_READY, len))
     {
-        delay_10ms(20);
+        delay_ms(200);
+#if 0
         i++;
 
         if (i > RESEND_TIMES_CPIN)
         {
             break;
         }
-
+#endif
     }
     i = 0;
     GSMNetType = USART_FAIL;
@@ -937,6 +967,169 @@ void GSM_simcard_Init(void)
     }
 	
 }
+
+/**
+  * @brief  Check Network Registration
+  * @param  None
+  * @retval None
+  */
+void GSM_CheckNetworkReg(void)
+{
+    unsigned int cmdLen = 0;
+    char *pRecvBuf = NULL;
+    uint32_t recvLen = 0;
+    char *pStr;
+
+	cmdLen = strlen(AT_CREG);
+    while (1)
+    {
+        while (USART_SUCESS != GSM_SendAT_rsp((char *)AT_CREG, (char *) "CREG",
+                cmdLen, &pRecvBuf, &recvLen));
+
+        pStr = strnchr_len(pRecvBuf, ',', 1, recvLen);
+        if (pStr != NULL)
+        {
+			// 1 Registered, home network
+            if (*(pStr+1) == '1')
+            {
+                break;
+            }
+        }
+    }
+}
+
+/**
+  * @brief  Set Network Registration
+  * 2 Enable network registration unsolicited result code with
+  * location information +CREG: <stat>[,<lac>,<ci>]
+  * @param  None
+  * @retval None
+  */
+void GSM_SetNetworkReg(void)
+{
+    static char *pcmdbuf = NULL;
+    unsigned int cmdLen = 0;
+
+    pcmdbuf = sendBuf;
+    sprintf(pcmdbuf, AT_CREG_SET, 2);
+    cmdLen = strlen(pcmdbuf);
+    while (USART_SUCESS != GSM_SendAT((char *) pcmdbuf, (char *) AT_OK, cmdLen));
+}
+
+/**
+  * @brief  Select TCPIP Application Mode
+  * 0 Normal mode; 1 Transparent mode
+  * @param  None
+  * @retval None
+  */
+void GSM_SetCIPMode(void)
+{
+	unsigned int cmdLen = 0;
+
+	// Select TCPIP application mode is normal mode
+	cmdLen = strlen(AT_CIPMODE_0);
+    while(USART_SUCESS != GSM_SendAT((char *) AT_CIPMODE_0, (char *) AT_OK, cmdLen));
+}
+
+
+/**
+  * @brief  Check Attach or Detach from GPRS Service Status
+  * @param  None
+  * @retval None
+  */
+void GSM_CheckGPRSService(void)
+{
+    char *pRecvBuf = NULL;
+    uint32_t recvLen = 0;
+
+    char *pStr;
+
+    while (1)
+    {
+        while (USART_SUCESS != GSM_SendAT_rsp((char *) AT_CGATT, (char *) "CGATT",
+                sizeof(AT_CGATT), &pRecvBuf, &recvLen));
+
+        // analyze CGATT rsp 1 Attached; 0 Detached
+        pStr = strnchr_len(pRecvBuf, ':', 1, recvLen);
+        if (pStr != NULL)
+        {
+            do {
+                pStr ++;
+            } while (*pStr == ' ');
+
+            if (*pStr == '1')
+            {
+                break;
+            }
+        }
+    }
+
+}
+
+/**
+  * @brief  Start Task and Set APN, USER NAME, PASSWORD
+  * @param  None
+  * @retval None
+  */
+void GSM_StartTaskAndSetAPN(void)
+{
+    static char *pcmdbuf = NULL;
+    unsigned int cmdLen = 0;
+
+    pcmdbuf = sendBuf;
+    sprintf(pcmdbuf, AT_CSTT_SET, "\"CMNET\"");
+    cmdLen = strlen(pcmdbuf);
+    while (USART_SUCESS != GSM_SendAT((char *) pcmdbuf, (char *) AT_OK, cmdLen));
+}
+
+/**
+  * @brief  Get Local IP Address
+  * @param  None
+  * @retval None
+  */
+void GSM_GetLocalIP(void)
+{
+    char *pRecvBuf = NULL;
+	unsigned int cmdLen = 0;
+    uint32_t recvLen = 0;
+
+	cmdLen = strlen(AT_CIFSR);
+    while (USART_SUCESS != GSM_SendAT_rsp((char *) AT_CIFSR, NULL,
+            cmdLen, &pRecvBuf, &recvLen));
+
+    // analyze CGATT rsp
+
+}
+
+/**
+  * @brief  Bring Up Wireless Connection with GPRS or CSD
+  * @param  None
+  * @retval None
+  */
+void GSM_BringUpConnect(void)
+{
+	unsigned int cmdLen = 0;
+	cmdLen = strlen(AT_CIICR);
+    while (USART_SUCESS != GSM_SendAT((char *) AT_CIICR, (char *) AT_OK, cmdLen));
+}
+
+/**
+  * @brief  Start Up TCP or UDP Connection
+  * @param  None
+  * @retval None
+  */
+void GSM_StartUpConnect(void)
+{
+    ST_NETWORKCONFIG stNetCfg;
+
+	sprintf(stNetCfg.TransferMode, "%s", "TCP");
+    sprintf(stNetCfg.RemoteIP, "%s", GSM_SERVER_IP);
+    sprintf(stNetCfg.RemotePort, GSM_SERVER_PORT);
+
+    while (USART_SUCESS != GPRS_LinkServer(&stNetCfg));
+}
+
+
 
 void GPS_Init(void)
 {
@@ -976,7 +1169,7 @@ void GSM_Init(void)
     len = strlen(ATE0_Cmd);
     GSM_SendAT((char *) ATE0_Cmd, (char *) AT_OK, len);
 
-    //GSM_simcard_Init();
+    //GSM_CheckSIMCard();
     //GPS_Init();
 }
 /*********************************************************************************************************
@@ -1274,6 +1467,7 @@ void GPRS_Init(void)
     cmdLen = strlen(AT_CIPMODE);
     GSM_SendAT((char *) AT_CIPMODE, (char *) AT_OK, cmdLen);
 }
+
 /*********************************************************************************************************
  ** Function name:       GPRS_LinkServer
  ** Descriptions:      	建立一个链接
@@ -1281,12 +1475,6 @@ void GPRS_Init(void)
  ** output parameters:   NONE
  ** Returned value:      返回状态结果
  *********************************************************************************************************/
-/*
- char RemoteIP[4];
- unsigned int RemotePort;
- char TransferMode[4];
- char APN[10];
- */
 unsigned char GPRS_LinkServer(pST_NETWORKCONFIG pnetconfig)
 {
     ST_NETWORKCONFIG netcfg = *pnetconfig;
@@ -1301,13 +1489,14 @@ unsigned char GPRS_LinkServer(pST_NETWORKCONFIG pnetconfig)
     sprintf(pcmdbuf, AT_CIPSTART, netcfg.TransferMode, netcfg.RemoteIP,
             netcfg.RemotePort);
     cmdLen = strlen(pcmdbuf);
-    if (USART_SUCESS == GSM_SendAT((char *) pcmdbuf, (char *) AT_OK, cmdLen))
+    if (USART_SUCESS == GSM_SendAT((char *) pcmdbuf, (char *) AT_CONNECTOK, cmdLen))
     {
         return USART_SUCESS;
     }
 
     return USART_FAIL;
 }
+
 /*********************************************************************************************************
  ** Function name:       GPRS_SendData
  ** Descriptions:      	GPRS非透传模式下发送数据
@@ -1340,7 +1529,7 @@ unsigned char GPRS_SendData(char *pString, unsigned int len)
         while (--i)
         {
             len = USART_GSM_BUFSIZE;
-            delay_10ms(200);
+            delay_ms(200);
 
             //printf("GSM_SendAT before usart_readbuffer len %d\n", len);
 
@@ -1370,7 +1559,7 @@ unsigned char GPRS_SendData(char *pString, unsigned int len)
 #endif
 			if (len > 0 && retFlag == USART_ENPROCESS)
             {
-                if (NULL != strstr_len(pBackBuf, "OK", len))
+                if (NULL != strstr_len(pBackBuf, "SEND OK", len))
                 {
                     break;
                 }
@@ -1455,13 +1644,13 @@ unsigned char GPRS_CheckLinkStatus(void)
 {
     return USART_FAIL;
 }
-/*********************************************************************************************************
- ** Function name:       GPRS_CLoseLink
- ** Descriptions:      	关闭GPRS链接
- ** input parameters:    NONE
- ** output parameters:   NONE
- ** Returned value:      返回状态结果
- *********************************************************************************************************/
+
+/**
+  * @brief  Close TCP or UDP Connection
+  * 1 Quick close
+  * @param  None
+  * @retval Status
+  */
 unsigned char GPRS_CloseLink(void)
 {
     unsigned int cmdLen;
@@ -1667,8 +1856,9 @@ void GPRS_Init_Interface(void)
     sprintf(stNetCfg.RemoteIP, "%s", "121.40.200.84");
     sprintf(stNetCfg.RemotePort, "6666");
 
+	// Select TCPIP application mode is normal mode
 	cmdLen = strlen(AT_CIPMODE_0);
-    GSM_SendAT((char *) AT_CIPMODE_0, (char *) AT_OK, cmdLen);
+    while(USART_SUCESS != GSM_SendAT((char *) AT_CIPMODE_0, (char *) AT_OK, cmdLen));
 	GSM_cgatt();
     GSM_cstt();
     GSM_ciicr();
@@ -1755,18 +1945,26 @@ void GSM_test_once(void)
 }
 
 #define DBG_GSM_DATA
-void GetGsmData(pST_SIMDATA pSimData)
+void GetGsmData(pST_SIMDATA pSimData, ST_IMSIINFO imsi)
 {
 	uint32_t i;
-	ST_IMSIINFO imsi;
 	ST_CREGINFO creg;
-	ST_BATTERYSTATUS battery;
+	ST_BATVOLTAGESTATUS battery;
 	unsigned char signal = 0;
 
-	while(USART_SUCESS != GSM_QueryImsi(&imsi));
-	while(USART_SUCESS != GSM_QueryCreg(&creg));
-	while(USART_SUCESS != GSM_QueryBattery(&battery));
-	while(USART_SUCESS != GSM_QuerySignal(&signal));
+	//while(USART_SUCESS != GSM_QueryImsi(&imsi));
+	if(USART_SUCESS != GSM_QueryCreg(&creg))
+	{
+		printf("Query CREG Fail\n");
+	}
+	if(USART_SUCESS != GSM_QueryBatVoltage(&battery))
+	{
+		printf("Query Bat Voltage Fail\n");
+	}
+	if(USART_SUCESS != GSM_QuerySignal(&signal))
+	{
+		printf("Query Signal Quality Fail\n");
+	}
 
 	pSimData->Station[0] = imsi.Mcc[0];
 	pSimData->Station[1] = imsi.Mcc[1];

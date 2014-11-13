@@ -26,13 +26,26 @@
 #include "stm32f10x.h"
 #include "stm32gps_board.h"
 
+#define SEND_SUCCESS_TIMES  4  // 成功发送次数
+
 #define SYS_TICK_PER_SEC 100u
-#define TIM2_PERIOD_TIMER 60000  // 60s
+#define TIM2_PRESCALER_TIMER 2000
+#define TIM2_PERIOD_TIMER 60000  // 30s
 
-
+// intimer [1 - 65535]
 #define SLEEP_SEC_INTIMER  600 // 10 min
+#define NORMAL_SEC_INTIMER 1200 // 20min
 
 #define AT_RESEND_TIMES  5
+
+#define GSM_SERVER_IP   "121.40.200.84"
+#define GSM_SERVER_PORT "6666"
+
+#define EELINK_LOGIN_MSGLEN  17
+#define EELINK_GPS_MSGLEN    42
+#define EELINK_LANG  0x01  // English
+#define EELINK_ZONE  0x20  // east 8
+
 
 #define USART_GSM_BUFSIZE_SEND 2048
 #define USART_GSM_BUFSIZE_RECEIVE 1024

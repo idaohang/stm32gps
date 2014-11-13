@@ -27,6 +27,8 @@
 #include "stm32gps_config.h"
 #include "stm32gps_board.h"
 #include "usart.h"
+#include "GSM_App.h"
+#include "GPS_App.h"
 
 
 /* Private typedef -----------------------------------------------------------*/
@@ -223,7 +225,11 @@ void TIM2_IRQHandler(void)
 	if ( TIM_GetITStatus(TIM2 , TIM_IT_Update) != RESET ) 
 	{	
 		TIM_ClearITPendingBit(TIM2 , TIM_FLAG_Update);
-		
+		STM_EVAL_LEDToggle(LED1);
+		printf("going in timer sleep mode\n");
+#if 0
+		GPSPowerOff();
+		GSM_PowerOff();
 		/* Wait till RTC Second event occurs */
 		RTC_ClearFlag(RTC_FLAG_SEC);
 		while(RTC_GetFlagStatus(RTC_FLAG_SEC) == RESET);
@@ -235,6 +241,7 @@ void TIM2_IRQHandler(void)
 		
 		/* Request to enter STANDBY mode (Wake Up flag is cleared in PWR_EnterSTANDBYMode function) */
 		PWR_EnterSTANDBYMode();
+#endif
 	}		 	
 }
 

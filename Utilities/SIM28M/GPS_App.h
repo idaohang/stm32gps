@@ -48,7 +48,8 @@ typedef struct
 }ST_GPSDATA, *pST_GPSDATA;
 
 
-
+void GPSPowerOn(void);
+void GPSPowerOff(void);
 unsigned char GPSInfoAnalyze(pST_GPSRMCINFO pRmcInfo);
 void ParseGPSInfo(ST_GPSRMCINFO rmcInfo, pST_GPSDATA pGpsData);
 
