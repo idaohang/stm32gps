@@ -136,7 +136,6 @@ void GPSPowerOff(void)
  ** output parameters:   NONE
  ** Returned value:      NONE
  *********************************************************************************************************/
-#define DBG_GPSInfoAnalyze
 unsigned char GPSInfoAnalyze(pST_GPSRMCINFO pRmcInfo)
 {
     unsigned int uLen;
@@ -154,7 +153,7 @@ unsigned char GPSInfoAnalyze(pST_GPSRMCINFO pRmcInfo)
 
     if (uLen > 0)
     {
-#ifdef DBG_GPSInfoAnalyze
+#ifdef DBG_ENABLE_MACRO
         {
             unsigned int i;
 
@@ -299,7 +298,7 @@ unsigned char GPSInfoAnalyze(pST_GPSRMCINFO pRmcInfo)
 	return GPS_SUCCESS;
 }
 
-#define GPS_INFO_DEBUG
+
 void ParseGPSInfo(ST_GPSRMCINFO rmcInfo, pST_GPSDATA pGpsData)
 {
 	uint32_t i;
@@ -315,7 +314,7 @@ void ParseGPSInfo(ST_GPSRMCINFO rmcInfo, pST_GPSDATA pGpsData)
 	t.tm_isdst = 0;
 
 	pGpsData->utc.i = mktime(&t);
-#ifdef GPS_INFO_DEBUG
+#ifdef DBG_ENABLE_MACRO
 printf("UTC:");
 for(i = 0; i < 4; i++)
 {
@@ -340,7 +339,7 @@ printf("\n");
 						+ (my_atoi_len(rmcInfo.latitude + 7, 1))*30 + (my_atoi_len(rmcInfo.latitude + 8, 1))*3);
 	}
 
-#ifdef GPS_INFO_DEBUG
+#ifdef DBG_ENABLE_MACRO
 printf("LATI:");
 for(i = 0; i < 4; i++)
 {
@@ -365,7 +364,7 @@ printf("\n");
 						+ my_atoi_len(rmcInfo.longitude + 8, 1)*30 + my_atoi_len(rmcInfo.longitude + 9, 1)*3);
 	}
 
-#ifdef GPS_INFO_DEBUG
+#ifdef DBG_ENABLE_MACRO
 printf("LONGI:");
 for(i = 0; i < 4; i++)
 {
@@ -381,7 +380,7 @@ printf("\n");
 
 	pGpsData->status = rmcInfo.status;
 
-#ifdef GPS_INFO_DEBUG
+#ifdef DBG_ENABLE_MACRO
 printf("SPEED: 0x%x\n", pGpsData->speed);
 printf("COURSE:");
 for(i = 0; i < 2; i++)

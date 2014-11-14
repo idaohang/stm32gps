@@ -22,6 +22,7 @@
   */ 
 
 /* Includes ------------------------------------------------------------------*/
+#include <stdio.h>
 #include "stm32f10x_it.h"
 #include "stm32f10x_it_api.h"
 #include "stm32gps_config.h"
@@ -225,11 +226,11 @@ void TIM2_IRQHandler(void)
 	if ( TIM_GetITStatus(TIM2 , TIM_IT_Update) != RESET ) 
 	{	
 		TIM_ClearITPendingBit(TIM2 , TIM_FLAG_Update);
-		STM_EVAL_LEDToggle(LED1);
+		//STM_EVAL_LEDToggle(LED1);
 		printf("going in timer sleep mode\n");
-#if 0
-		GPSPowerOff();
-		GSM_PowerOff();
+#if 1
+		//GPSPowerOff();
+		//GSM_PowerOff();
 		/* Wait till RTC Second event occurs */
 		RTC_ClearFlag(RTC_FLAG_SEC);
 		while(RTC_GetFlagStatus(RTC_FLAG_SEC) == RESET);

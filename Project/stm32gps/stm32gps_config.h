@@ -29,8 +29,9 @@
 #define SEND_SUCCESS_TIMES  4  // 成功发送次数
 
 #define SYS_TICK_PER_SEC 100u
-#define TIM2_PRESCALER_TIMER 2000
-#define TIM2_PERIOD_TIMER 60000  // 30s
+#define TIM2_PRESCALER_TIMER 65535
+#define TIM2_PRESCALER_HZ 1000
+#define TIM2_PERIOD_TIMER 65535  // ~58s
 
 // intimer [1 - 65535]
 #define SLEEP_SEC_INTIMER  600 // 10 min
@@ -66,6 +67,23 @@
 #define NULL 0
 #define RST_OK   0xAA
 #define RST_FAIL 0x55
+
+#ifdef DBG_ENABLE_MACRO
+    #define DEBUG(msg, args...) \
+        (void)printf(msg , ##args)
+    #define DBG_INFO(msg, args...) \
+        (void)printf("[INFO]---" msg "\n", ##args)
+    #define DBG_WARN(msg, args...) \
+        (void)printf("[WARN]---" msg "\n", ##args)
+    #define DBG_ERRO(msg, args...) \
+        (void)printf("[ERRO]---" msg "\n", ##args)
+#else
+    #define DEBUG
+    #define DBG_INFO
+    #define DBG_WARN
+    #define DBG_ERRO
+#endif // USE_DEBUG
+
 
 /* Exported functions ------------------------------------------------------- */
 void TimingDelay_Decrement(void);

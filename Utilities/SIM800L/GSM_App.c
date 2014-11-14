@@ -342,9 +342,9 @@ void GSM_PowerOff(void)
 void GSM_TurnOnOff(void)
 {
     GPIO_ResetBits(GSM_PWRKEY_PORT, GSM_PWRKEY_PIN);
-    delay_ms(3000);
+    delay_10ms(300);
     GPIO_SetBits(GSM_PWRKEY_PORT, GSM_PWRKEY_PIN);
-    delay_ms(3000);
+    delay_10ms(300);
 }
 
 /*********************************************************************************************************
@@ -367,7 +367,6 @@ void GSM_ClearBuffer(void)
  ** output parameters:   NONE
  ** Returned value:      发送指令返回状态
  *********************************************************************************************************/
-#define DBG_GSM_SendAT
 unsigned char GSM_SendAT(char *pCMD, char *pCMDBack, uint32_t CMDLen)
 {
     unsigned char i = AT_RESEND_TIMES;
@@ -377,7 +376,7 @@ unsigned char GSM_SendAT(char *pCMD, char *pCMDBack, uint32_t CMDLen)
 
     len = CMDLen;
 
-#ifdef DBG_GSM_SendAT
+#ifdef DBG_ENABLE_MACRO
     {
         uint32_t tmpIdx;
 
@@ -402,14 +401,14 @@ unsigned char GSM_SendAT(char *pCMD, char *pCMDBack, uint32_t CMDLen)
         while (--i)
         {
             len = USART_GSM_BUFSIZE;
-            delay_ms(100);
+            delay_10ms(10);
 
             //printf("GSM_SendAT before usart_readbuffer len %d\n", len);
 
             retFlag = usart_readbuffer(STM32_SIM908_GSM_COM, pBackBuf, &len);
             //printf("GSM_SendAT after usart_readbuffer len %d\n", len);
 
-#ifdef DBG_GSM_SendAT
+#ifdef DBG_ENABLE_MACRO
             {
                 uint32_t tmpIdx;
 
@@ -444,7 +443,7 @@ unsigned char GSM_SendAT(char *pCMD, char *pCMDBack, uint32_t CMDLen)
     return USART_SUCESS;
 }
 
-#define DBG_GSM_SendAT_buffer
+
 unsigned char GSM_SendAT_rsp(char *pCMD, char *pCMDBack,
         uint32_t CMDLen, char **ppRecvBuf, uint32_t *pRecvLen)
 {
@@ -455,7 +454,7 @@ unsigned char GSM_SendAT_rsp(char *pCMD, char *pCMDBack,
 
     len = CMDLen;
 
-#ifdef DBG_GSM_SendAT_buffer
+#ifdef DBG_ENABLE_MACRO
             {
                 uint32_t tmpIdx;
 
@@ -478,13 +477,13 @@ unsigned char GSM_SendAT_rsp(char *pCMD, char *pCMDBack,
     while (--i)
     {
         len = USART_GSM_BUFSIZE;
-        delay_ms(100);
+        delay_10ms(10);
 
         //printf("GSM_SendAT before usart_readbuffer len %d\n", len);
         retFlag = usart_readbuffer(STM32_SIM908_GSM_COM, pBackBuf, &len);
         //printf("GSM_SendAT after usart_readbuffer len %d\n", len);
 
-#ifdef DBG_GSM_SendAT_buffer
+#ifdef DBG_ENABLE_MACRO
         {
             uint32_t tmpIdx;
 
@@ -713,7 +712,7 @@ unsigned char GSM_QueryCreg(pST_CREGINFO pCregInfo)
     uint32_t recvLen = 0;
     char *pStr = NULL;
 	char tmpbuf[2];
-#ifdef 0
+#if 0
     pcmdbuf = sendBuf;
     sprintf(pcmdbuf, AT_CREG_SET, 2);
     cmdLen = strlen(pcmdbuf);
@@ -942,7 +941,7 @@ void GSM_CheckSIMCard(void)
     len = strlen(AT_CPIN);
     while (USART_SUCESS != GSM_SendAT((char *) AT_CPIN, (char *)AT_READY, len))
     {
-        delay_ms(200);
+        delay_10ms(20);
 #if 0
         i++;
 
@@ -1156,7 +1155,7 @@ void GSM_Init(void)
     len = strlen(AT_Cmd);
     while (USART_SUCESS != GSM_SendAT((char *) AT_Cmd, (char *) AT_OK, len))
     {
-        delay_ms(300);
+        delay_10ms(30);
         i++;
         if (i > 2)
         {
@@ -1505,7 +1504,6 @@ unsigned char GPRS_LinkServer(pST_NETWORKCONFIG pnetconfig)
  ** output parameters:   NONE
  ** Returned value:      返回状态结果
  *********************************************************************************************************/
-#define DBG_GPRS_SendData
 unsigned char GPRS_SendData(char *pString, unsigned int len)
 {
 	char *pBackBuf = BackBuf;
@@ -1529,7 +1527,7 @@ unsigned char GPRS_SendData(char *pString, unsigned int len)
         while (--i)
         {
             len = USART_GSM_BUFSIZE;
-            delay_ms(200);
+            delay_10ms(20);
 
             //printf("GSM_SendAT before usart_readbuffer len %d\n", len);
 
@@ -1537,7 +1535,7 @@ unsigned char GPRS_SendData(char *pString, unsigned int len)
                     usart_readbuffer(STM32_SIM908_GSM_COM, BackBuf, &len);
             //printf("GSM_SendAT after usart_readbuffer len %d\n", len);
 
-#ifdef DBG_GPRS_SendData
+#ifdef DBG_ENABLE_MACRO
             {
                 uint32_t tmpIdx;
 				uint32_t tmpStart;
@@ -1580,7 +1578,6 @@ unsigned char GPRS_SendData(char *pString, unsigned int len)
  ** output parameters:   NONE
  ** Returned value:      返回状态结果
  *********************************************************************************************************/
-#define DBG_GPRS_ReceiveData
 unsigned char GPRS_ReceiveData(char *pString)
 {
 	uint32_t i = 5;
@@ -1599,7 +1596,7 @@ unsigned char GPRS_ReceiveData(char *pString)
                 usart_readbuffer(STM32_SIM908_GSM_COM, receiveBuf, &len);
         //printf("GSM_SendAT after usart_readbuffer len %d\n", len);
 
-#ifdef DBG_GPRS_ReceiveData
+#ifdef DBG_ENABLE_MACRO
         {
             uint32_t tmpIdx;
 			
@@ -1976,12 +1973,16 @@ void GetGsmData(pST_SIMDATA pSimData, ST_IMSIINFO imsi)
 	pSimData->Station[7] = creg.Ci[0];
 	pSimData->Station[8] = creg.Ci[1];
 
-	pSimData->Battery[0] = battery.BatVoltage.s[1];
-	pSimData->Battery[1] = battery.BatVoltage.s[0];
+	// when status is valid then parse
+	if(1 == battery.Status)
+	{
+		pSimData->Battery[0] = battery.BatVoltage.s[1];
+		pSimData->Battery[1] = battery.BatVoltage.s[0];
+	}
 
 	sprintf(pSimData->Signal, "%x", signal);
 
-#ifdef DBG_GSM_DATA
+#ifdef DBG_ENABLE_MACRO
 printf("STATION:");
 for(i = 0; i < 9; i++)
 {

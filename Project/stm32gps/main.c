@@ -353,12 +353,12 @@ while(1)
 	/////////////////////////////////////////////////////////////////
 	// This Process is Finished, Then goto sleep
 	/////////////////////////////////////////////////////////////////
-	printf("this being in normal standby mode\n");
-#if 0
+	DEBUG("this being in normal standby mode\n");
+#if 1
 	printf("this being in standby mode\n");
-	delay_10ms(100);
-	GPSPowerOff();
-	GSM_PowerOff();
+	//delay_10ms(100);
+	//GPSPowerOff();
+	//GSM_PowerOff();
 	/* Wait till RTC Second event occurs */
 	RTC_ClearFlag(RTC_FLAG_SEC);
 	while(RTC_GetFlagStatus(RTC_FLAG_SEC) == RESET);
@@ -377,8 +377,9 @@ while(1)
 	/////////////////////////////////////////////////////////////////
 	while(1)
 	{
-		//STM_EVAL_LEDToggle(LED1);
-		delay_10ms(100);
+		STM_EVAL_LEDToggle(LED1);
+		//delay_10ms(100);
+		delay_ms(1000);
 	}
 
 }

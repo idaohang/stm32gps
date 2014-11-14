@@ -3,6 +3,7 @@
 #include "stm32gps_board.h"
 #include "stm32gps_config.h"
 #include <stdio.h>
+#include <string.h>
 
 USART_InitTypeDef USART_InitStructure;
 
@@ -130,11 +131,13 @@ void TIM2_Configuration(void)
 {
 	uint16_t PrescalerValue = 0;
     TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-	PrescalerValue = (uint16_t) (SystemCoreClock / TIM2_PRESCALER_TIMER) - 1;
+	PrescalerValue = (uint16_t) (SystemCoreClock / TIM2_PRESCALER_HZ) - 1;
+	
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 , ENABLE);
     TIM_DeInit(TIM2);
     TIM_TimeBaseStructure.TIM_Period= (uint16_t)TIM2_PERIOD_TIMER;
     // 累计 TIM_Period个频率后产生一个更新或者中断
+    //TIM_TimeBaseStructure.TIM_Prescaler= (uint16_t)TIM2_PRESCALER_TIMER;
     TIM_TimeBaseStructure.TIM_Prescaler= PrescalerValue;
     TIM_TimeBaseStructure.TIM_ClockDivision=TIM_CKD_DIV1;
     TIM_TimeBaseStructure.TIM_CounterMode=TIM_CounterMode_Up;
