@@ -32,9 +32,7 @@
 #include "eelink.h"
 #include "gpio.h"
 
-/** @addtogroup STM32F10x_StdPeriph_Examples
- * @{
- */
+//#define USE_DEBUG
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -163,8 +161,10 @@ int main(void)
 	/////////////////////////////////////////////////////////////////
 	// Power ON GPS and GSM
 	/////////////////////////////////////////////////////////////////
-//	GPSPowerOn();
-//	GSM_PowerOn();
+#ifdef USE_STM32_GPS_BOARD_VB
+	GPSPowerOn();
+	GSM_PowerOn();
+#endif
 	/////////////////////////////////////////////////////////////////
 	// Configure the SysTick
 	/////////////////////////////////////////////////////////////////
@@ -212,6 +212,7 @@ int main(void)
 	// Init Variables
 	/////////////////////////////////////////////////////////////////
 	InitVariables();
+	
 #if 1    
 while(1)
 {
@@ -226,6 +227,10 @@ while(1)
 	// While loop to check sim card status
 	/////////////////////////////////////////////////////////////////
 	GSM_CheckSIMCard();
+	#ifdef USE_DEBUG
+	//GetGsmData(&g_simData, g_imsiInfo);
+	GSM_test();
+	#endif
 	/////////////////////////////////////////////////////////////////
 	// While loop to check network registration status
 	/////////////////////////////////////////////////////////////////
@@ -323,7 +328,7 @@ while(1)
 			}
 			printf("GPRS_SendData Fail\n");
 		}
-
+#if 1
 		// Increase success number
 		g_successNum++;
 		// if send ok then into sleep
@@ -331,8 +336,10 @@ while(1)
 		{
 			break;
 		}
-
+#endif
+#ifdef DBG_ENABLE_MACRO
 	ShowGpsMsg();
+#endif
 
 		// Increase sequence number if overflow then re-init
 		g_sequenceNum++;
@@ -340,7 +347,7 @@ while(1)
 		{
 			g_sequenceNum = 1;
 		}
-		delay_ms(100);
+		delay_10ms(10);
     }
 	
 	// if send ok then into sleep
@@ -357,8 +364,10 @@ while(1)
 #if 1
 	printf("this being in standby mode\n");
 	//delay_10ms(100);
-	//GPSPowerOff();
-	//GSM_PowerOff();
+#ifdef USE_STM32_GPS_BOARD_VB
+	GPSPowerOff();
+	GSM_PowerOff();
+#endif
 	/* Wait till RTC Second event occurs */
 	RTC_ClearFlag(RTC_FLAG_SEC);
 	while(RTC_GetFlagStatus(RTC_FLAG_SEC) == RESET);
@@ -378,8 +387,18 @@ while(1)
 	while(1)
 	{
 		STM_EVAL_LEDToggle(LED1);
-		//delay_10ms(100);
-		delay_ms(1000);
+		delay_10ms(100);
+		//delay_ms(1000);
+#ifdef USE_DEBUG
+		if( GPS_SUCCESS != GPSInfoAnalyze(&rmc))
+		{
+			printf("GPS Recv Error!\n");
+		}
+		else
+		{
+			STM_EVAL_LEDToggle(LED1);
+		}
+#endif
 	}
 
 }

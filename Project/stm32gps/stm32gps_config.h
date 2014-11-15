@@ -31,7 +31,7 @@
 #define SYS_TICK_PER_SEC 100u
 #define TIM2_PRESCALER_TIMER 65535
 #define TIM2_PRESCALER_HZ 1000
-#define TIM2_PERIOD_TIMER 65535  // ~58s
+#define TIM2_PERIOD_TIMER 65535  // ~58s or 3min
 
 // intimer [1 - 65535]
 #define SLEEP_SEC_INTIMER  600 // 10 min

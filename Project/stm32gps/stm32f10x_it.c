@@ -227,10 +227,12 @@ void TIM2_IRQHandler(void)
 	{	
 		TIM_ClearITPendingBit(TIM2 , TIM_FLAG_Update);
 		//STM_EVAL_LEDToggle(LED1);
-		printf("going in timer sleep mode\n");
+		DEBUG("going in timer sleep mode\n");
 #if 1
-		//GPSPowerOff();
-		//GSM_PowerOff();
+#ifdef USE_STM32_GPS_BOARD_VB
+		GPSPowerOff();
+		GSM_PowerOff();
+#endif
 		/* Wait till RTC Second event occurs */
 		RTC_ClearFlag(RTC_FLAG_SEC);
 		while(RTC_GetFlagStatus(RTC_FLAG_SEC) == RESET);

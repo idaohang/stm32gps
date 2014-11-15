@@ -994,6 +994,8 @@ void GSM_CheckNetworkReg(void)
                 break;
             }
         }
+
+		delay_10ms(20);
     }
 }
 
@@ -1844,6 +1846,34 @@ unsigned char GSM_cgpsstatus(void)
     return USART_SUCESS;
 }
 
+unsigned char GSM_ceng(void)
+{
+    //char *pRecvBuf = NULL;
+    static char *pcmdbuf = NULL;
+    unsigned int cmdLen = 0;
+
+    GSM_ClearBuffer();
+    pcmdbuf = sendBuf;
+    if (pcmdbuf == NULL)
+    {
+        return USART_FAIL;
+    }
+
+	pcmdbuf = sendBuf;
+    sprintf(pcmdbuf, AT_CENG_SET, 2);
+    cmdLen = strlen(pcmdbuf);
+    GSM_SendAT((char *) pcmdbuf, (char *) AT_OK, cmdLen);
+
+
+    while (USART_SUCESS != GSM_SendAT((char *) AT_CENG,
+            (char *) NULL/*AT_OK*/, sizeof(AT_CENG)));
+
+    // analyze CGATT rsp
+
+
+    return USART_SUCESS;
+}
+
 void GPRS_Init_Interface(void)
 {
     unsigned int cmdLen;
@@ -2034,13 +2064,14 @@ void GSM_test(void)
 	printf("mcc[0] = 0x%x, mcc[1] = 0x%x; mnc[0]=0x%x,mnc[1]=0x%x\n", imsi.Mcc[0],imsi.Mcc[1],imsi.Mnc[0],imsi.Mnc[1]);
 
 
-	while(USART_SUCESS != GSM_QueryCreg(&creg));
-	printf("n = %d; status=%d lac[0] = 0x%x, lac[1] = 0x%x ci[0] = 0x%x ci[1] = 0x%x\n", creg.n, creg.Stat, creg.Lac[0], creg.Lac[1], creg.Ci[0], creg.Ci[1]);
+	//while(USART_SUCESS != GSM_QueryCreg(&creg));
+	//printf("n = %d; status=%d lac[0] = 0x%x, lac[1] = 0x%x ci[0] = 0x%x ci[1] = 0x%x\n", creg.n, creg.Stat, creg.Lac[0], creg.Lac[1], creg.Ci[0], creg.Ci[1]);
     //GSM_creg();
 	//GSM_cgatt();
     //GSM_cstt();
     //GSM_ciicr();
     //GSM_cifsr();
+    GSM_ceng();
 }
 
 void GSM_tcpip_test(void)

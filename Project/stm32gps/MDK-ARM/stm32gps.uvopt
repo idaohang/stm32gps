@@ -367,10 +367,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>17</ColumnNumber>
+      <ColumnNumber>11</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>359</TopLine>
-      <CurrentLine>363</CurrentLine>
+      <TopLine>79</TopLine>
+      <CurrentLine>79</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\main.c</PathWithFileName>
       <FilenameWithoutPath>main.c</FilenameWithoutPath>
@@ -381,10 +381,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>41</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>223</TopLine>
-      <CurrentLine>239</CurrentLine>
+      <TopLine>212</TopLine>
+      <CurrentLine>212</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\stm32f10x_it.c</PathWithFileName>
       <FilenameWithoutPath>stm32f10x_it.c</FilenameWithoutPath>
@@ -395,7 +395,7 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>24</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
       <TopLine>49</TopLine>
       <CurrentLine>55</CurrentLine>
@@ -663,7 +663,7 @@
       <Focus>0</Focus>
       <ColumnNumber>8</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>199</TopLine>
+      <TopLine>201</TopLine>
       <CurrentLine>207</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\system_stm32f10x.c</PathWithFileName>
@@ -828,13 +828,25 @@
     <ActiveMDIGroup>0</ActiveMDIGroup>
     <MDIGroup>
       <Size>100</Size>
-      <ActiveTab>5</ActiveTab>
+      <ActiveTab>2</ActiveTab>
       <Documents>
         <Doc>
+          <Name>..\stm32f10x_it.c</Name>
+          <ColumnNumber>0</ColumnNumber>
+          <TopLine>212</TopLine>
+          <CurrentLine>212</CurrentLine>
+        </Doc>
+        <Doc>
+          <Name>..\stm32gps_config.h</Name>
+          <ColumnNumber>0</ColumnNumber>
+          <TopLine>31</TopLine>
+          <CurrentLine>37</CurrentLine>
+        </Doc>
+        <Doc>
           <Name>..\main.c</Name>
-          <ColumnNumber>17</ColumnNumber>
-          <TopLine>359</TopLine>
-          <CurrentLine>363</CurrentLine>
+          <ColumnNumber>11</ColumnNumber>
+          <TopLine>79</TopLine>
+          <CurrentLine>79</CurrentLine>
         </Doc>
         <Doc>
           <Name>..\..\..\Utilities\SIM800L\GSM_App.c</Name>
@@ -844,27 +856,15 @@
         </Doc>
         <Doc>
           <Name>..\stm32gps_config.c</Name>
-          <ColumnNumber>24</ColumnNumber>
+          <ColumnNumber>0</ColumnNumber>
           <TopLine>49</TopLine>
           <CurrentLine>55</CurrentLine>
         </Doc>
         <Doc>
           <Name>..\system_stm32f10x.c</Name>
           <ColumnNumber>8</ColumnNumber>
-          <TopLine>199</TopLine>
+          <TopLine>201</TopLine>
           <CurrentLine>207</CurrentLine>
-        </Doc>
-        <Doc>
-          <Name>..\stm32f10x_it.c</Name>
-          <ColumnNumber>41</ColumnNumber>
-          <TopLine>223</TopLine>
-          <CurrentLine>239</CurrentLine>
-        </Doc>
-        <Doc>
-          <Name>..\stm32gps_config.h</Name>
-          <ColumnNumber>29</ColumnNumber>
-          <TopLine>31</TopLine>
-          <CurrentLine>37</CurrentLine>
         </Doc>
       </Documents>
     </MDIGroup>

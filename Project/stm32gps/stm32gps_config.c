@@ -137,8 +137,8 @@ void TIM2_Configuration(void)
     TIM_DeInit(TIM2);
     TIM_TimeBaseStructure.TIM_Period= (uint16_t)TIM2_PERIOD_TIMER;
     // 累计 TIM_Period个频率后产生一个更新或者中断
-    //TIM_TimeBaseStructure.TIM_Prescaler= (uint16_t)TIM2_PRESCALER_TIMER;
-    TIM_TimeBaseStructure.TIM_Prescaler= PrescalerValue;
+    TIM_TimeBaseStructure.TIM_Prescaler= (uint16_t)TIM2_PRESCALER_TIMER;
+    //TIM_TimeBaseStructure.TIM_Prescaler= PrescalerValue;
     TIM_TimeBaseStructure.TIM_ClockDivision=TIM_CKD_DIV1;
     TIM_TimeBaseStructure.TIM_CounterMode=TIM_CounterMode_Up;
     TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
