@@ -367,10 +367,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>11</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>79</TopLine>
-      <CurrentLine>79</CurrentLine>
+      <TopLine>144</TopLine>
+      <CurrentLine>157</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\main.c</PathWithFileName>
       <FilenameWithoutPath>main.c</FilenameWithoutPath>
@@ -397,8 +397,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>49</TopLine>
-      <CurrentLine>55</CurrentLine>
+      <TopLine>145</TopLine>
+      <CurrentLine>158</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\stm32gps_config.c</PathWithFileName>
       <FilenameWithoutPath>stm32gps_config.c</FilenameWithoutPath>
@@ -661,7 +661,7 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>8</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
       <TopLine>201</TopLine>
       <CurrentLine>207</CurrentLine>
@@ -766,10 +766,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>9</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>377</TopLine>
-      <CurrentLine>377</CurrentLine>
+      <TopLine>299</TopLine>
+      <CurrentLine>306</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Utilities\SIM28M\GPS_App.c</PathWithFileName>
       <FilenameWithoutPath>GPS_App.c</FilenameWithoutPath>
@@ -787,10 +787,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>11</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>1103</TopLine>
-      <CurrentLine>1109</CurrentLine>
+      <TopLine>2038</TopLine>
+      <CurrentLine>2045</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Utilities\SIM800L\GSM_App.c</PathWithFileName>
       <FilenameWithoutPath>GSM_App.c</FilenameWithoutPath>
@@ -828,7 +828,7 @@
     <ActiveMDIGroup>0</ActiveMDIGroup>
     <MDIGroup>
       <Size>100</Size>
-      <ActiveTab>2</ActiveTab>
+      <ActiveTab>3</ActiveTab>
       <Documents>
         <Doc>
           <Name>..\stm32f10x_it.c</Name>
@@ -844,27 +844,33 @@
         </Doc>
         <Doc>
           <Name>..\main.c</Name>
-          <ColumnNumber>11</ColumnNumber>
-          <TopLine>79</TopLine>
-          <CurrentLine>79</CurrentLine>
+          <ColumnNumber>0</ColumnNumber>
+          <TopLine>144</TopLine>
+          <CurrentLine>157</CurrentLine>
         </Doc>
         <Doc>
           <Name>..\..\..\Utilities\SIM800L\GSM_App.c</Name>
-          <ColumnNumber>0</ColumnNumber>
-          <TopLine>1103</TopLine>
-          <CurrentLine>1109</CurrentLine>
+          <ColumnNumber>11</ColumnNumber>
+          <TopLine>2038</TopLine>
+          <CurrentLine>2045</CurrentLine>
         </Doc>
         <Doc>
           <Name>..\stm32gps_config.c</Name>
           <ColumnNumber>0</ColumnNumber>
-          <TopLine>49</TopLine>
-          <CurrentLine>55</CurrentLine>
+          <TopLine>145</TopLine>
+          <CurrentLine>158</CurrentLine>
         </Doc>
         <Doc>
           <Name>..\system_stm32f10x.c</Name>
-          <ColumnNumber>8</ColumnNumber>
+          <ColumnNumber>0</ColumnNumber>
           <TopLine>201</TopLine>
           <CurrentLine>207</CurrentLine>
+        </Doc>
+        <Doc>
+          <Name>..\..\..\Utilities\SIM28M\GPS_App.c</Name>
+          <ColumnNumber>0</ColumnNumber>
+          <TopLine>299</TopLine>
+          <CurrentLine>306</CurrentLine>
         </Doc>
       </Documents>
     </MDIGroup>

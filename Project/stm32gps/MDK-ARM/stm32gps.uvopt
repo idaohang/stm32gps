@@ -367,10 +367,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>15</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>144</TopLine>
-      <CurrentLine>157</CurrentLine>
+      <TopLine>250</TopLine>
+      <CurrentLine>250</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\main.c</PathWithFileName>
       <FilenameWithoutPath>main.c</FilenameWithoutPath>
@@ -395,10 +395,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>19</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>145</TopLine>
-      <CurrentLine>158</CurrentLine>
+      <TopLine>1</TopLine>
+      <CurrentLine>4</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\stm32gps_config.c</PathWithFileName>
       <FilenameWithoutPath>stm32gps_config.c</FilenameWithoutPath>
@@ -768,7 +768,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>299</TopLine>
+      <TopLine>300</TopLine>
       <CurrentLine>306</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Utilities\SIM28M\GPS_App.c</PathWithFileName>
@@ -787,10 +787,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>11</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>2038</TopLine>
-      <CurrentLine>2045</CurrentLine>
+      <TopLine>788</TopLine>
+      <CurrentLine>801</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Utilities\SIM800L\GSM_App.c</PathWithFileName>
       <FilenameWithoutPath>GSM_App.c</FilenameWithoutPath>
@@ -799,8 +799,8 @@
 
   <AlienFiles>
     <PathWithFilename>D:\GitHub\stm32gps\Project\stm32gps\stm32gps_config.h</PathWithFilename>
-    <TopLine>31</TopLine>
-    <CurrentLine>37</CurrentLine>
+    <TopLine>28</TopLine>
+    <CurrentLine>39</CurrentLine>
     <Constant>0</Constant>
     <WindowPosition>
       <length>0</length>
@@ -828,49 +828,25 @@
     <ActiveMDIGroup>0</ActiveMDIGroup>
     <MDIGroup>
       <Size>100</Size>
-      <ActiveTab>3</ActiveTab>
+      <ActiveTab>2</ActiveTab>
       <Documents>
         <Doc>
-          <Name>..\stm32f10x_it.c</Name>
-          <ColumnNumber>0</ColumnNumber>
-          <TopLine>212</TopLine>
-          <CurrentLine>212</CurrentLine>
-        </Doc>
-        <Doc>
-          <Name>..\stm32gps_config.h</Name>
-          <ColumnNumber>0</ColumnNumber>
-          <TopLine>31</TopLine>
-          <CurrentLine>37</CurrentLine>
-        </Doc>
-        <Doc>
           <Name>..\main.c</Name>
-          <ColumnNumber>0</ColumnNumber>
-          <TopLine>144</TopLine>
-          <CurrentLine>157</CurrentLine>
-        </Doc>
-        <Doc>
-          <Name>..\..\..\Utilities\SIM800L\GSM_App.c</Name>
-          <ColumnNumber>11</ColumnNumber>
-          <TopLine>2038</TopLine>
-          <CurrentLine>2045</CurrentLine>
+          <ColumnNumber>15</ColumnNumber>
+          <TopLine>250</TopLine>
+          <CurrentLine>250</CurrentLine>
         </Doc>
         <Doc>
           <Name>..\stm32gps_config.c</Name>
-          <ColumnNumber>0</ColumnNumber>
-          <TopLine>145</TopLine>
-          <CurrentLine>158</CurrentLine>
+          <ColumnNumber>19</ColumnNumber>
+          <TopLine>1</TopLine>
+          <CurrentLine>4</CurrentLine>
         </Doc>
         <Doc>
-          <Name>..\system_stm32f10x.c</Name>
-          <ColumnNumber>0</ColumnNumber>
-          <TopLine>201</TopLine>
-          <CurrentLine>207</CurrentLine>
-        </Doc>
-        <Doc>
-          <Name>..\..\..\Utilities\SIM28M\GPS_App.c</Name>
-          <ColumnNumber>0</ColumnNumber>
-          <TopLine>299</TopLine>
-          <CurrentLine>306</CurrentLine>
+          <Name>..\stm32gps_config.h</Name>
+          <ColumnNumber>69</ColumnNumber>
+          <TopLine>28</TopLine>
+          <CurrentLine>39</CurrentLine>
         </Doc>
       </Documents>
     </MDIGroup>

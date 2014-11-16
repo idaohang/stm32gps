@@ -36,17 +36,17 @@
 
 #define TIM2_PRESCALER_TIMER 65535
 #define TIM2_PRESCALER_HZ 1000
-#define TIM2_PERIOD_TIMER  65534  // 2min
+#define TIM2_PERIOD_TIMER  65534  // 3min  根据需要可修改该定时器的值
 
 #define TIM4_PRESCALER_TIMER 65535
 #define TIM4_PRESCALER_HZ 1000
-#define TIM4_PERIOD_TIMER  35534  // 1min
+#define TIM4_PERIOD_TIMER  35534  // 3min
 
 // RTC Alarm Second [1 - 65535]
 #define SLEEP_TIM2_SEC  30//30sec 600 // 10 min
 #define SLEEP_NORMAL_SEC 120 // 2min //1200 // 20min
 
-#define AT_RESEND_TIMES  5
+#define AT_RESEND_TIMES  10  // x*100ms
 
 #define GSM_SERVER_IP   "121.40.200.84"  // server ip address
 #define GSM_SERVER_PORT "6666"           // server port

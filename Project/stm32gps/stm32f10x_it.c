@@ -259,6 +259,10 @@ void TIM2_IRQHandler(void)
 #endif
 		DEBUG("going in timer2 standby mode\n");
 #ifndef MACRO_FOR_TEST
+		/////////////////////////////////////////////////////////////////
+		// Power OFF GPS and GSM before go into standby mode
+		/////////////////////////////////////////////////////////////////
+		GSM_TurnOnOff();
 #ifdef USE_STM32_GPS_BOARD_VB
 		GPSPowerOff();
 		GSM_PowerOff();

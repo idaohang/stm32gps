@@ -447,7 +447,7 @@ unsigned char GSM_SendAT(char *pCMD, char *pCMDBack, uint32_t CMDLen)
 unsigned char GSM_SendAT_rsp(char *pCMD, char *pCMDBack,
         uint32_t CMDLen, char **ppRecvBuf, uint32_t *pRecvLen)
 {
-    unsigned char i = 5;
+    unsigned char i = AT_RESEND_TIMES;
     unsigned int len;
     char *pBackBuf = BackBuf;
     unsigned char retFlag = 0;
@@ -793,22 +793,23 @@ unsigned char GSM_QueryBatVoltage(pST_BATVOLTAGESTATUS pSig)
 {
     unsigned int cmdLen;
     static char *pfeed = NULL;
+	char *pRecvBuf = NULL;
+    uint32_t recvLen = 0;
 
     cmdLen = strlen(AT_CADC);
     GSM_ClearBuffer();
-    if (USART_SUCESS == GSM_SendAT((char *) AT_CADC, (char *) AT_OK, cmdLen))
+    if (USART_SUCESS == GSM_SendAT_rsp((char *) AT_CADC, (char *) AT_OK, cmdLen, &pRecvBuf, &recvLen))
     {
-        pfeed = strnchr(BackBuf, ',', 1);	//提取状态
+        pfeed = strnchr(pRecvBuf, ',', 1);	//提取状态
         if (pfeed == NULL)
         {
             return USART_FAIL;
         }
-        pSig->Status = *(pfeed-1);
+        pSig->Status = (*(pfeed-1) - '0');
 
 		// 分压电阻是100K和200K
 		pfeed++;
 		pSig->BatVoltage.i= ((atoi(pfeed)*3)/2);
-		
         return USART_SUCESS;
     }
     return USART_FAIL;
@@ -1018,18 +1019,52 @@ void GSM_SetNetworkReg(void)
 }
 
 /**
+  * @brief  Get TCPIP Application Mode
+  * 0 Normal mode; 1 Transparent mode
+  * @param  None
+  * @retval None
+  */
+unsigned char GSM_QueryCIPMode(unsigned char *pMode)
+{
+    unsigned int cmdLen;
+    static char *pfeed = NULL;
+
+    cmdLen = strlen(AT_CIPMODE_GET);
+    GSM_ClearBuffer();
+    if (USART_SUCESS == GSM_SendAT((char *) AT_CIPMODE_GET, (char *) AT_OK, cmdLen))
+    {
+        pfeed = strnchr(BackBuf, ':', 1);
+        if (pfeed == NULL)
+            return USART_FAIL;
+        pfeed++;
+        *pMode = atoi(pfeed);
+        return USART_SUCESS;
+    }
+    return USART_FAIL;
+}
+
+/**
   * @brief  Select TCPIP Application Mode
   * 0 Normal mode; 1 Transparent mode
   * @param  None
   * @retval None
   */
-void GSM_SetCIPMode(void)
+void GSM_SetCIPMode(unsigned char mode)
 {
+	static char *pcmdbuf = NULL;
 	unsigned int cmdLen = 0;
+	unsigned char preMode = 0;
 
+	// get cpimode
+	GSM_QueryCIPMode(&preMode);
 	// Select TCPIP application mode is normal mode
-	cmdLen = strlen(AT_CIPMODE_0);
-    while(USART_SUCESS != GSM_SendAT((char *) AT_CIPMODE_0, (char *) AT_OK, cmdLen));
+	if(preMode != mode)
+	{
+		pcmdbuf = sendBuf;
+	    sprintf(pcmdbuf, AT_CIPMODE_SET, mode);
+		cmdLen = strlen(pcmdbuf);
+	    while(USART_SUCESS != GSM_SendAT((char *) pcmdbuf, (char *) AT_OK, cmdLen));
+	}
 }
 
 
@@ -1074,13 +1109,34 @@ void GSM_CheckGPRSService(void)
   */
 void GSM_StartTaskAndSetAPN(void)
 {
+	uint8_t cycles = 0;
     static char *pcmdbuf = NULL;
     unsigned int cmdLen = 0;
+	char *pRecvBuf = NULL;
+    uint32_t recvLen = 0;
+
+    cmdLen = strlen(AT_CSTT);
+    GSM_ClearBuffer();
+
+	if(USART_SUCESS == GSM_SendAT_rsp((char *)AT_CSTT, (char *)AT_OK, cmdLen, &pRecvBuf, &recvLen))
+	{
+		if(NULL != strstr_len(pRecvBuf, (char *)"CMNET", recvLen))
+		{
+			return;
+		}
+	}
 
     pcmdbuf = sendBuf;
     sprintf(pcmdbuf, AT_CSTT_SET, "\"CMNET\"");
     cmdLen = strlen(pcmdbuf);
-    while (USART_SUCESS != GSM_SendAT((char *) pcmdbuf, (char *) AT_OK, cmdLen));
+    while (USART_SUCESS != GSM_SendAT((char *) pcmdbuf, (char *) AT_OK, cmdLen))
+	{
+		cycles++;
+		if(cycles > 5)
+		{
+			break;
+		}
+    }
 }
 
 /**
@@ -1090,16 +1146,18 @@ void GSM_StartTaskAndSetAPN(void)
   */
 void GSM_GetLocalIP(void)
 {
-    char *pRecvBuf = NULL;
+	uint8_t cycles = 0;
 	unsigned int cmdLen = 0;
-    uint32_t recvLen = 0;
 
 	cmdLen = strlen(AT_CIFSR);
-    while (USART_SUCESS != GSM_SendAT_rsp((char *) AT_CIFSR, NULL,
-            cmdLen, &pRecvBuf, &recvLen));
-
-    // analyze CGATT rsp
-
+    while (USART_SUCESS != GSM_SendAT((char *) AT_CIFSR, NULL, cmdLen))
+	{
+		cycles++;
+		if(cycles > 5)
+		{
+			break;
+		}
+    }
 }
 
 /**
@@ -1109,9 +1167,18 @@ void GSM_GetLocalIP(void)
   */
 void GSM_BringUpConnect(void)
 {
+	uint8_t cycles = 0;
 	unsigned int cmdLen = 0;
+	
 	cmdLen = strlen(AT_CIICR);
-    while (USART_SUCESS != GSM_SendAT((char *) AT_CIICR, (char *) AT_OK, cmdLen));
+    while (USART_SUCESS != GSM_SendAT((char *) AT_CIICR, (char *) AT_OK, cmdLen))
+	{
+		cycles++;
+		if(cycles > 5)
+		{
+			break;
+		}
+    }
 }
 
 /**
@@ -1481,6 +1548,8 @@ unsigned char GPRS_LinkServer(pST_NETWORKCONFIG pnetconfig)
     ST_NETWORKCONFIG netcfg = *pnetconfig;
     static char *pcmdbuf = NULL;
     unsigned int cmdLen = 0;
+	char *pRecvBuf = NULL;
+    uint32_t recvLen = 0;
 
     pcmdbuf = sendBuf;
     if (pcmdbuf == NULL)
@@ -1490,10 +1559,14 @@ unsigned char GPRS_LinkServer(pST_NETWORKCONFIG pnetconfig)
     sprintf(pcmdbuf, AT_CIPSTART, netcfg.TransferMode, netcfg.RemoteIP,
             netcfg.RemotePort);
     cmdLen = strlen(pcmdbuf);
-    if (USART_SUCESS == GSM_SendAT((char *) pcmdbuf, (char *) AT_CONNECTOK, cmdLen))
+    if (USART_SUCESS == GSM_SendAT_rsp((char *) pcmdbuf, (char *) AT_CONNECTOK, cmdLen, &pRecvBuf, &recvLen))
     {
         return USART_SUCESS;
     }
+	else if(NULL != strstr_len(pRecvBuf, "ALREADY CONNECT", recvLen))
+	{
+		return USART_SUCESS;
+	}
 
     return USART_FAIL;
 }
