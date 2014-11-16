@@ -26,21 +26,30 @@
 #include "stm32f10x.h"
 #include "stm32gps_board.h"
 
-#define SEND_SUCCESS_TIMES  4  // 成功发送次数
+// #define MACRO_FOR_TEST  // Should NOT define
+
+#define GSM_SUCCESS_TIMES   4  // GSM 成功发送次数
+#define GPS_RETERY_TIMES    4  // GPS 重试次数 - 1
+#define GSM_RETERY_TIMES    10 // GSM 错误重发次数 - 1
 
 #define SYS_TICK_PER_SEC 100u
+
 #define TIM2_PRESCALER_TIMER 65535
 #define TIM2_PRESCALER_HZ 1000
-#define TIM2_PERIOD_TIMER 65535  // ~58s or 3min
+#define TIM2_PERIOD_TIMER  65534  // 2min
 
-// intimer [1 - 65535]
-#define SLEEP_SEC_INTIMER  600 // 10 min
-#define NORMAL_SEC_INTIMER 1200 // 20min
+#define TIM4_PRESCALER_TIMER 65535
+#define TIM4_PRESCALER_HZ 1000
+#define TIM4_PERIOD_TIMER  35534  // 1min
+
+// RTC Alarm Second [1 - 65535]
+#define SLEEP_TIM2_SEC  30//30sec 600 // 10 min
+#define SLEEP_NORMAL_SEC 120 // 2min //1200 // 20min
 
 #define AT_RESEND_TIMES  5
 
-#define GSM_SERVER_IP   "121.40.200.84"
-#define GSM_SERVER_PORT "6666"
+#define GSM_SERVER_IP   "121.40.200.84"  // server ip address
+#define GSM_SERVER_PORT "6666"           // server port
 
 #define EELINK_LOGIN_MSGLEN  17
 #define EELINK_GPS_MSGLEN    42
@@ -91,7 +100,10 @@ void TimingDelay_Decrement(void);
 void delay_10ms(__IO uint32_t nTime);
 void delay_ms(uint32_t Timer);
 void stm32gps_sys_tick_cfg(void);
+void RCC_Configuration(void);
+void SYSCLKConfig_STOP(void);
 void RTC_Configuration(void);
+void EXTI_Configuration(void);
 void TIM2_Configuration(void);
 void RTC_NVIC_Configuration(void);
 void TIM2_NVIC_Configuration(void);

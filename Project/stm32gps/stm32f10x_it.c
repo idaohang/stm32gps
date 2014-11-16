@@ -221,14 +221,44 @@ void RTC_IRQHandler(void)
 	//RTC_WaitForLastTask();
 }
 
+/**
+  * @brief  This function handles RTC Alarm interrupt request.
+  * @param  None
+  * @retval None
+  */
+void RTCAlarm_IRQHandler(void)
+{
+  if(RTC_GetITStatus(RTC_IT_ALR) != RESET)
+  {
+    /* Clear EXTI line17 pending bit */
+    EXTI_ClearITPendingBit(EXTI_Line17);
+
+    /* Check if the Wake-Up flag is set */
+    if(PWR_GetFlagStatus(PWR_FLAG_WU) != RESET)
+    {
+      /* Clear Wake Up flag */
+      PWR_ClearFlag(PWR_FLAG_WU);
+    }
+
+    /* Wait until last write operation on RTC registers has finished */
+    RTC_WaitForLastTask();   
+    /* Clear RTC Alarm interrupt pending bit */
+    RTC_ClearITPendingBit(RTC_IT_ALR);
+    /* Wait until last write operation on RTC registers has finished */
+    RTC_WaitForLastTask();
+  }
+}
+
 void TIM2_IRQHandler(void)
 {
 	if ( TIM_GetITStatus(TIM2 , TIM_IT_Update) != RESET ) 
 	{	
 		TIM_ClearITPendingBit(TIM2 , TIM_FLAG_Update);
-		//STM_EVAL_LEDToggle(LED1);
-		DEBUG("going in timer sleep mode\n");
-#if 1
+#ifdef MACRO_FOR_TEST
+		STM_EVAL_LEDToggle(LED1);
+#endif
+		DEBUG("going in timer2 standby mode\n");
+#ifndef MACRO_FOR_TEST
 #ifdef USE_STM32_GPS_BOARD_VB
 		GPSPowerOff();
 		GSM_PowerOff();
@@ -238,7 +268,7 @@ void TIM2_IRQHandler(void)
 		while(RTC_GetFlagStatus(RTC_FLAG_SEC) == RESET);
 		
 		/* Set the RTC Alarm after xx s */
-		RTC_SetAlarm(RTC_GetCounter()+ SLEEP_SEC_INTIMER);
+		RTC_SetAlarm(RTC_GetCounter()+ SLEEP_TIM2_SEC);
 		/* Wait until last write operation on RTC registers has finished */
 		RTC_WaitForLastTask();
 		

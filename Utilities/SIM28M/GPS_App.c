@@ -184,7 +184,7 @@ unsigned char GPSInfoAnalyze(pST_GPSRMCINFO pRmcInfo)
 				else
 				{
 					pRmcInfo->status = 0;
-					return GPS_NOTVALIDE;
+					return GPS_INVALID;
 				}
                 
             }

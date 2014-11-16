@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
+ErrorStatus HSEStartUpStatus;
 USART_InitTypeDef USART_InitStructure;
 
 /* Private variables ---------------------------------------------------------*/
@@ -70,25 +71,91 @@ void stm32gps_sys_tick_cfg(void)
 }
 
 /**
+  * @brief  Configures the RCC.
+  * TIM_Prescaler = 1KHz; TIM_Period = 60s
+  * @param  None
+  * @retval None
+  */
+void RCC_Configuration(void)
+{
+	ErrorStatus HSEStartUpStatus;
+	//RCC_DeInit();    //RCC system reset 
+    RCC_HSEConfig(RCC_HSE_ON);  // Enable HSE 
+    HSEStartUpStatus = RCC_WaitForHSEStartUp();  // Wait till HSE is ready 
+    if(HSEStartUpStatus == SUCCESS)
+   {
+        /*设置低速AHB时钟（PCLK1）*/    
+		RCC_PCLK1Config(RCC_HCLK_Div4);   //RCC_HCLK_Div4——APB1时钟= HCLK / 4
+    }
+}
+
+/**
+  * @brief  Configures system clock after wake-up from STOP: enable HSE, PLL
+  *         and select PLL as system clock source.
+  * @param  None
+  * @retval None
+  */
+void SYSCLKConfig_STOP(void)
+{
+  /* Enable HSE */
+  RCC_HSEConfig(RCC_HSE_ON);
+
+  /* Wait till HSE is ready */
+  HSEStartUpStatus = RCC_WaitForHSEStartUp();
+
+  if(HSEStartUpStatus == SUCCESS)
+  {
+
+#ifdef STM32F10X_CL
+    /* Enable PLL2 */ 
+    RCC_PLL2Cmd(ENABLE);
+
+    /* Wait till PLL2 is ready */
+    while(RCC_GetFlagStatus(RCC_FLAG_PLL2RDY) == RESET)
+    {
+    }
+
+#endif
+
+    /* Enable PLL */ 
+    RCC_PLLCmd(ENABLE);
+
+    /* Wait till PLL is ready */
+    while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET)
+    {
+    }
+
+    /* Select PLL as system clock source */
+    RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
+
+    /* Wait till PLL is used as system clock source */
+    while(RCC_GetSYSCLKSource() != 0x08)
+    {
+    }
+  }
+}
+
+
+/**
   * @brief  Configures RTC clock source and prescaler.
   * @param  None
   * @retval None
   */
 void RTC_Configuration(void)
 {
-  /* Check if the StandBy flag is set */
-  if(PWR_GetFlagStatus(PWR_FLAG_SB) != RESET)
-  {/* System resumed from STANDBY mode */
-
-    /* Clear StandBy flag */
-    PWR_ClearFlag(PWR_FLAG_SB);
-
-    /* Wait for RTC APB registers synchronisation */
-    RTC_WaitForSynchro();
-    /* No need to configure the RTC as the RTC configuration(clock source, enable,
-       prescaler,...) is kept after wake-up from STANDBY */
-  }
-  else
+//  /* Check if the StandBy flag is set */
+//  if(PWR_GetFlagStatus(PWR_FLAG_SB) != RESET)
+//  {/* System resumed from STANDBY mode */
+//
+//    /* Clear StandBy flag */
+//    PWR_ClearFlag(PWR_FLAG_SB);
+//
+//    /* Wait for RTC APB registers synchronisation */
+//    RTC_WaitForSynchro();
+//    /* No need to configure the RTC as the RTC configuration(clock source, enable,
+//       prescaler,...) is kept after wake-up from STANDBY */
+//  }
+//  else
   {/* StandBy flag is not set */
 
     /* RTC clock source configuration ----------------------------------------*/
@@ -122,6 +189,24 @@ void RTC_Configuration(void)
 }
 
 /**
+  * @brief  Configures EXTI Lines.
+  * @param  None
+  * @retval None
+  */
+void EXTI_Configuration(void)
+{
+  EXTI_InitTypeDef EXTI_InitStructure;
+
+  /* Configure EXTI Line17(RTC Alarm) to generate an interrupt on rising edge */
+  EXTI_ClearITPendingBit(EXTI_Line17);
+  EXTI_InitStructure.EXTI_Line = EXTI_Line17;
+  EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
+  EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
+  EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+  EXTI_Init(&EXTI_InitStructure);
+}
+
+/**
   * @brief  Configures the TIM2.
   * TIM_Prescaler = 1KHz; TIM_Period = 60s
   * @param  None
@@ -150,6 +235,34 @@ void TIM2_Configuration(void)
 }
 
 /**
+  * @brief  Configures the TIM4.
+  * TIM_Prescaler = 1KHz; TIM_Period = 60s
+  * @param  None
+  * @retval None
+  */
+void TIM4_Configuration(void)
+{
+	uint16_t PrescalerValue = 0;
+    TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
+	PrescalerValue = (uint16_t) (SystemCoreClock / TIM4_PRESCALER_HZ) - 1;
+	
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4 , ENABLE);
+    TIM_DeInit(TIM4);
+    TIM_TimeBaseStructure.TIM_Period= (uint16_t)TIM4_PERIOD_TIMER;
+    // 累计 TIM_Period个频率后产生一个更新或者中断
+    TIM_TimeBaseStructure.TIM_Prescaler= (uint16_t)TIM4_PRESCALER_TIMER;
+    //TIM_TimeBaseStructure.TIM_Prescaler= PrescalerValue;
+    TIM_TimeBaseStructure.TIM_ClockDivision=TIM_CKD_DIV1;
+    TIM_TimeBaseStructure.TIM_CounterMode=TIM_CounterMode_Up;
+    TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure);
+    TIM_ClearFlag(TIM4, TIM_FLAG_Update);	// 清除溢出中断标志 
+    TIM_ITConfig(TIM4,TIM_IT_Update,ENABLE);
+    TIM_Cmd(TIM4, ENABLE);																		/* 开启时钟 */
+    
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4 , DISABLE); // 先关闭等待使用   
+}
+
+/**
   * @brief  Configures the NVIC.
   * @param  None
   * @retval None
@@ -158,7 +271,7 @@ void RTC_NVIC_Configuration(void)
 {  
 NVIC_InitTypeDef NVIC_InitStructure;  /*设置先占优先级1位，从占优先级3位*/  
 NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);  /*选择RTC的IRQ通道*/   
-NVIC_InitStructure.NVIC_IRQChannel =RTC_IRQn;  /*设置中断先占优先级为1*/   
+NVIC_InitStructure.NVIC_IRQChannel =RTCAlarm_IRQn;  /*设置中断先占优先级为1*/   
 NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority =1;  /*设置中断从占优先级为1*/   
 NVIC_InitStructure.NVIC_IRQChannelSubPriority =0;  /*使能RTC的IRQ通道*/   
 NVIC_InitStructure.NVIC_IRQChannelCmd =ENABLE;  
@@ -184,6 +297,24 @@ void TIM2_NVIC_Configuration(void)
     NVIC_Init(&NVIC_InitStructure);
 }
 
+/*
+ * 函数名：TIM4_NVIC_Configuration
+ * 描述  ：TIM4中断优先级配置
+ * 输入  ：无
+ * 输出  ：无	
+ */
+void TIM4_NVIC_Configuration(void)
+{
+    NVIC_InitTypeDef NVIC_InitStructure; 
+    
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);  													
+    NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn;	  
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;	
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+}
+
 /**
   * @brief  Start timer2
   * @param  None
@@ -204,6 +335,28 @@ void TIM2_Stop(void)
 {
 	TIM_Cmd(TIM2, DISABLE);
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 , DISABLE);
+}
+
+/**
+  * @brief  Start timer4
+  * @param  None
+  * @retval None
+  */
+void TIM4_Start(void)
+{
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4 , ENABLE);
+	TIM_Cmd(TIM4, ENABLE);
+}
+
+/**
+  * @brief  Stop timer4
+  * @param  None
+  * @retval None
+  */
+void TIM4_Stop(void)
+{
+	TIM_Cmd(TIM4, DISABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4 , DISABLE);
 }
 
 /**
@@ -239,7 +392,7 @@ void stm32gps_led_cfg(void)
     //STM_EVAL_LEDInit(LED3);
     //STM_EVAL_LEDInit(LED4);
 
-    STM_EVAL_LEDOn(LED1);
+    //STM_EVAL_LEDOn(LED1);
     //STM_EVAL_LEDOff(LED2);
     //STM_EVAL_LEDOff(LED3);
     //STM_EVAL_LEDOn(LED4);

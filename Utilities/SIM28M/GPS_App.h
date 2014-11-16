@@ -5,7 +5,7 @@
 #define GPS_SUCCESS 0
 #define GPS_FAIL    1
 #define GPS_ERROR   2
-#define GPS_NOTVALIDE 3
+#define GPS_INVALID 3
 
 typedef struct
 {

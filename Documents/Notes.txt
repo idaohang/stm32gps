@@ -9,3 +9,68 @@ D:\GitHub\stm32gprs\Project\STM32F10x_StdPeriph_Template\stm32_sim908_cfg.c
 3.
 
 
+
+伪代码如下
+主函数
+main()
+{
+	初始化IO
+	关闭GPS、GSM电源
+	初始化时钟、中断、定时器等
+	初始化串口
+	打开定时器（定时器时间为2 min）
+	初始化全局变量
+	打开GPS电源
+	while(1)
+	{
+		读取GPS数据
+		if(数据有效)
+		{
+			break;
+		}
+		if(GPS接收次数 > 5)
+		{
+			break;
+		}
+		设置RTC ALARM为10s
+		进入STOP模式
+		设置RCC
+	}
+	打开GSM电源
+	while(1)
+	{
+		初始化GSM、检查SIM卡、检查是否联网
+		连接服务器
+		获取IMEI
+		发送登陆数据包
+		while(1)
+		{
+			读取GPS数据
+			读取GSM相关数据（基站、IMSI等）
+			发送GPS数据包
+			if(发送错误次数 > 10)
+			{
+				break;
+			}
+			if(发送成功次数 > 6)
+			{
+				break;
+			}
+		}
+		if(发送成功次数 > 6)
+			{
+				break;
+			}
+	}
+	关闭GPS、GSM电源
+	设置RTC ALARM为2 min
+	进入Standby模式
+}
+定时器中断
+TIM2_IRQHandler()
+{
+	关闭GPS、GSM电源
+	设置RTC ALARM为30 sec
+	进入Standby模式
+}
+
