@@ -160,7 +160,7 @@ void RTC_Configuration(void)
 
     /* RTC clock source configuration ----------------------------------------*/
     /* Reset Backup Domain */
-    BKP_DeInit();
+    //BKP_DeInit();
   
     /* Enable LSE OSC */
 	RCC_LSICmd(ENABLE);

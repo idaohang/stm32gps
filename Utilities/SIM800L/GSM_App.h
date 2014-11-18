@@ -21,7 +21,7 @@ typedef struct
 
 typedef struct
 {
-	char RemoteIP[16];
+	char RemoteIP[32];
 	char RemotePort[5];
 	char TransferMode[4];
 	char APN[10];
@@ -96,6 +96,7 @@ unsigned char GSM_ChkRingSta(void);
 void GSM_PowerOn(void);
 void GSM_PowerOff(void);
 void GSM_TurnOnOff(void);
+void GSM_TurnOnOff_delay(void);
 void GSM_ClearBuffer(void);
 unsigned char GSM_SendAT(char *pCMD, char *pCMDBack, uint32_t CMDLen);
 unsigned char GSM_SendAT_rsp(char *pCMD, char *pCMDBack,

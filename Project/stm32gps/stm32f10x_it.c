@@ -258,11 +258,11 @@ void TIM2_IRQHandler(void)
 		STM_EVAL_LEDToggle(LED1);
 #endif
 		DEBUG("going in timer2 standby mode\n");
-#ifndef MACRO_FOR_TEST
+#if 1
 		/////////////////////////////////////////////////////////////////
 		// Power OFF GPS and GSM before go into standby mode
 		/////////////////////////////////////////////////////////////////
-		GSM_TurnOnOff();
+		GSM_TurnOnOff_delay();
 #ifdef USE_STM32_GPS_BOARD_VB
 		GPSPowerOff();
 		GSM_PowerOff();
@@ -270,12 +270,11 @@ void TIM2_IRQHandler(void)
 		/* Wait till RTC Second event occurs */
 		RTC_ClearFlag(RTC_FLAG_SEC);
 		while(RTC_GetFlagStatus(RTC_FLAG_SEC) == RESET);
-		
+	
 		/* Set the RTC Alarm after xx s */
 		RTC_SetAlarm(RTC_GetCounter()+ SLEEP_TIM2_SEC);
 		/* Wait until last write operation on RTC registers has finished */
-		RTC_WaitForLastTask();
-		
+		RTC_WaitForLastTask();		
 		/* Request to enter STANDBY mode (Wake Up flag is cleared in PWR_EnterSTANDBYMode function) */
 		PWR_EnterSTANDBYMode();
 #endif

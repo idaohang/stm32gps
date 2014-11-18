@@ -348,6 +348,21 @@ void GSM_TurnOnOff(void)
 }
 
 /*********************************************************************************************************
+ ** Function name:       GSM_TurnOnOff()
+ ** Descriptions:        启动或关闭模块
+ ** input parameters:    NONE
+ ** output parameters:   NONE
+ ** Returned value:
+ *********************************************************************************************************/
+void GSM_TurnOnOff_delay(void)
+{
+    GPIO_ResetBits(GSM_PWRKEY_PORT, GSM_PWRKEY_PIN);
+    delay_ms(3000);
+    GPIO_SetBits(GSM_PWRKEY_PORT, GSM_PWRKEY_PIN);
+    delay_ms(3000);
+}
+
+/*********************************************************************************************************
  ** Function name:       GSM_ClearBuffer()
  ** Descriptions:        清空接收缓存
  ** input parameters:    NONE
@@ -1561,12 +1576,17 @@ unsigned char GPRS_LinkServer(pST_NETWORKCONFIG pnetconfig)
     cmdLen = strlen(pcmdbuf);
     if (USART_SUCESS == GSM_SendAT_rsp((char *) pcmdbuf, (char *) AT_CONNECTOK, cmdLen, &pRecvBuf, &recvLen))
     {
-        return USART_SUCESS;
+        //return USART_SUCESS;
+        if(NULL != strstr_len(pRecvBuf, (char *)AT_CONNECTOK, recvLen))
+        {
+			return USART_SUCESS;
+        }
+		else if(NULL != strstr_len(pRecvBuf, "ALREADY CONNECT", recvLen))
+		{
+			return USART_SUCESS;
+		}
     }
-	else if(NULL != strstr_len(pRecvBuf, "ALREADY CONNECT", recvLen))
-	{
-		return USART_SUCESS;
-	}
+	
 
     return USART_FAIL;
 }

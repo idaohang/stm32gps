@@ -48,7 +48,8 @@
 
 #define AT_RESEND_TIMES  10  // x*100ms
 
-#define GSM_SERVER_IP   "121.40.200.84"  // server ip address
+// #define GSM_SERVER_IP   "121.40.200.84"  // server ip address
+#define GSM_SERVER_IP   "lkf.broadnetwork.net"  // server name
 #define GSM_SERVER_PORT "6666"           // server port
 
 #define EELINK_LOGIN_MSGLEN  17
@@ -92,6 +93,14 @@
     #define DBG_WARN
     #define DBG_ERRO
 #endif // USE_DEBUG
+
+
+typedef enum 
+{
+  REMOVAL_FLAG = 0,
+  REMOVAL_NOT = 1,
+  REMOVAL_YES = 2
+} REMOVAL_TypeDef;
 
 
 /* Exported functions ------------------------------------------------------- */

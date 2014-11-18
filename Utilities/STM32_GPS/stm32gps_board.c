@@ -44,7 +44,7 @@
 #ifdef USE_STM32_GPS_BOARD_VA
  #include "STM32_GPS_BOARD_VA/stm32_gps_board.c"
 #elif defined USE_STM32_GPS_BOARD_VB
- #include "STM32_GPS_BOARD_VA/stm32_gps_board.c" 
+ #include "STM32_GPS_BOARD_VB/stm32_gps_board.c" 
 #else 
  #error "Please select first the STM32 GPS board to be used (in stm32_eval.h)"
 #endif
