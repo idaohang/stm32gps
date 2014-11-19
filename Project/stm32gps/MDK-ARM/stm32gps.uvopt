@@ -73,7 +73,7 @@
       <OPTFL>
         <tvExp>1</tvExp>
         <tvExpOptDlg>0</tvExpOptDlg>
-        <IsCurrentTarget>1</IsCurrentTarget>
+        <IsCurrentTarget>0</IsCurrentTarget>
       </OPTFL>
       <CpuCode>255</CpuCode>
       <Books>
@@ -211,7 +211,7 @@
         <PageWidth>79</PageWidth>
         <PageLength>66</PageLength>
         <TabStop>8</TabStop>
-        <ListingPath>.\</ListingPath>
+        <ListingPath>.\STM32GPS-REALSE\</ListingPath>
       </OPTLEX>
       <ListingPage>
         <CreateCListing>1</CreateCListing>
@@ -241,7 +241,7 @@
       <OPTFL>
         <tvExp>1</tvExp>
         <tvExpOptDlg>0</tvExpOptDlg>
-        <IsCurrentTarget>0</IsCurrentTarget>
+        <IsCurrentTarget>1</IsCurrentTarget>
       </OPTFL>
       <CpuCode>255</CpuCode>
       <Books>
@@ -255,11 +255,11 @@
         <SimDllName>SARMCM3.DLL</SimDllName>
         <SimDllArguments></SimDllArguments>
         <SimDlgDllName>DARMSTM.DLL</SimDlgDllName>
-        <SimDlgDllArguments>-pSTM32F101RC</SimDlgDllArguments>
+        <SimDlgDllArguments>-pSTM32F103RC</SimDlgDllArguments>
         <TargetDllName>SARMCM3.DLL</TargetDllName>
         <TargetDllArguments></TargetDllArguments>
         <TargetDlgDllName>TARMSTM.DLL</TargetDlgDllName>
-        <TargetDlgDllArguments>-pSTM32F101RC</TargetDlgDllArguments>
+        <TargetDlgDllArguments>-pSTM32F103RC</TargetDlgDllArguments>
       </DllOpt>
       <DebugOpt>
         <uSim>0</uSim>
@@ -317,7 +317,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>JL2CM3</Key>
-          <Name>-U17935099 -O78 -S0 -A0 -C0 -JU1 -JI127.0.0.1 -JP0 -RST0 -N00("ARM CoreSight SW-DP") -D00(1BA01477) -L00(0) -TO18 -TC10000000 -TP21 -TDS8004 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -TB1 -TFE0 -FO7 -FD20000000 -FC800 -FN1 -FF0STM32F10x_512 -FS08000000 -FL080000</Name>
+          <Name>-U17935099 -O78 -S0 -A0 -C0 -JU1 -JI127.0.0.1 -JP0 -RST0 -TO18 -TC10000000 -TP21 -TDS8004 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -TB1 -TFE0 -FO7 -FD20000000 -FC800 -FN1 -FF0STM32F10x_512 -FS08000000 -FL040000</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -369,8 +369,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>248</TopLine>
-      <CurrentLine>248</CurrentLine>
+      <TopLine>584</TopLine>
+      <CurrentLine>584</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\main.c</PathWithFileName>
       <FilenameWithoutPath>main.c</FilenameWithoutPath>
@@ -395,10 +395,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>30</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>10</TopLine>
-      <CurrentLine>16</CurrentLine>
+      <TopLine>238</TopLine>
+      <CurrentLine>245</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\stm32gps_config.c</PathWithFileName>
       <FilenameWithoutPath>stm32gps_config.c</FilenameWithoutPath>
@@ -768,8 +768,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>300</TopLine>
-      <CurrentLine>306</CurrentLine>
+      <TopLine>294</TopLine>
+      <CurrentLine>299</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Utilities\SIM28M\GPS_App.c</PathWithFileName>
       <FilenameWithoutPath>GPS_App.c</FilenameWithoutPath>
@@ -787,10 +787,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>1</ColumnNumber>
+      <ColumnNumber>51</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>717</TopLine>
-      <CurrentLine>723</CurrentLine>
+      <TopLine>648</TopLine>
+      <CurrentLine>648</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Utilities\SIM800L\GSM_App.c</PathWithFileName>
       <FilenameWithoutPath>GSM_App.c</FilenameWithoutPath>
@@ -798,9 +798,9 @@
   </Group>
 
   <AlienFiles>
-    <PathWithFilename>D:\GitHub\stm32gps\Project\stm32gps\stm32gps_config.h</PathWithFilename>
-    <TopLine>103</TopLine>
-    <CurrentLine>109</CurrentLine>
+    <PathWithFilename>D:\GitHub\stm32gps\Utilities\SIM28M\GPS_App.h</PathWithFilename>
+    <TopLine>50</TopLine>
+    <CurrentLine>57</CurrentLine>
     <Constant>0</Constant>
     <WindowPosition>
       <length>0</length>
@@ -828,31 +828,31 @@
     <ActiveMDIGroup>0</ActiveMDIGroup>
     <MDIGroup>
       <Size>100</Size>
-      <ActiveTab>3</ActiveTab>
+      <ActiveTab>0</ActiveTab>
       <Documents>
         <Doc>
           <Name>..\main.c</Name>
           <ColumnNumber>0</ColumnNumber>
-          <TopLine>248</TopLine>
-          <CurrentLine>248</CurrentLine>
+          <TopLine>584</TopLine>
+          <CurrentLine>584</CurrentLine>
         </Doc>
         <Doc>
-          <Name>..\stm32gps_config.h</Name>
+          <Name>..\..\..\Utilities\SIM28M\GPS_App.h</Name>
           <ColumnNumber>0</ColumnNumber>
-          <TopLine>103</TopLine>
-          <CurrentLine>109</CurrentLine>
+          <TopLine>50</TopLine>
+          <CurrentLine>57</CurrentLine>
         </Doc>
         <Doc>
-          <Name>..\stm32f10x_it.c</Name>
+          <Name>..\..\..\Utilities\SIM28M\GPS_App.c</Name>
           <ColumnNumber>0</ColumnNumber>
-          <TopLine>261</TopLine>
-          <CurrentLine>267</CurrentLine>
+          <TopLine>294</TopLine>
+          <CurrentLine>299</CurrentLine>
         </Doc>
         <Doc>
-          <Name>..\..\..\Utilities\SIM800L\GSM_App.c</Name>
-          <ColumnNumber>1</ColumnNumber>
-          <TopLine>717</TopLine>
-          <CurrentLine>723</CurrentLine>
+          <Name>..\stm32gps_config.c</Name>
+          <ColumnNumber>0</ColumnNumber>
+          <TopLine>238</TopLine>
+          <CurrentLine>245</CurrentLine>
         </Doc>
       </Documents>
     </MDIGroup>

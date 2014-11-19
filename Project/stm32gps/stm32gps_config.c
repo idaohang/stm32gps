@@ -214,9 +214,9 @@ void EXTI_Configuration(void)
   */
 void TIM2_Configuration(void)
 {
-	uint16_t PrescalerValue = 0;
+	//uint16_t PrescalerValue = 0;
     TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-	PrescalerValue = (uint16_t) (SystemCoreClock / TIM2_PRESCALER_HZ) - 1;
+	//PrescalerValue = (uint16_t) (SystemCoreClock / TIM2_PRESCALER_HZ) - 1;
 	
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 , ENABLE);
     TIM_DeInit(TIM2);
@@ -242,9 +242,9 @@ void TIM2_Configuration(void)
   */
 void TIM4_Configuration(void)
 {
-	uint16_t PrescalerValue = 0;
+//	uint16_t PrescalerValue = 0;
     TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-	PrescalerValue = (uint16_t) (SystemCoreClock / TIM4_PRESCALER_HZ) - 1;
+//	PrescalerValue = (uint16_t) (SystemCoreClock / TIM4_PRESCALER_HZ) - 1;
 	
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4 , ENABLE);
     TIM_DeInit(TIM4);

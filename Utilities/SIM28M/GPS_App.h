@@ -53,16 +53,5 @@ void GPSPowerOff(void);
 unsigned char GPSInfoAnalyze(pST_GPSRMCINFO pRmcInfo);
 void ParseGPSInfo(ST_GPSRMCINFO rmcInfo, pST_GPSDATA pGpsData);
 
-void GPSShow(void);
 
-
-
-
-
-
-
-
-
-
-
-#endif
+#endif // __GPS_APP_H_

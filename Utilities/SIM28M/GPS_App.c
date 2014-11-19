@@ -52,11 +52,6 @@ char GPSBuffer[USART_GPS_BUFSIZE];
  $GPVTG,0,T,,M,0.000,N,0.000,K,A*13
  $GPZDA,054753.000,01,05,2012,,*53
  */
-char GPS_Einfo[30] = "E:\0";
-char GPS_Ninfo[30] = "N:\0";
-char Altitude_info[5] = "\0";
-char Speed_info[6] = "\0";
-char Degrees_info[4] = "\0";
 
 /*********************************************************************************************************
  ** Function name:       my_atoi_len
@@ -315,12 +310,12 @@ void ParseGPSInfo(ST_GPSRMCINFO rmcInfo, pST_GPSDATA pGpsData)
 
 	pGpsData->utc.i = mktime(&t);
 #ifdef DBG_ENABLE_MACRO
-printf("UTC:");
-for(i = 0; i < 4; i++)
-{
-	printf("0x%x-", pGpsData->utc.s[i]);
-}
-printf("\n");
+	printf("UTC:");
+	for(i = 0; i < 4; i++)
+	{
+		printf("0x%x-", pGpsData->utc.s[i]);
+	}
+	printf("\n");
 #endif
 
 	// latitude
@@ -340,12 +335,12 @@ printf("\n");
 	}
 
 #ifdef DBG_ENABLE_MACRO
-printf("LATI:");
-for(i = 0; i < 4; i++)
-{
-	printf("0x%x-", pGpsData->latitude.s[i]);
-}
-printf("\n");
+	printf("LATI:");
+	for(i = 0; i < 4; i++)
+	{
+		printf("0x%x-", pGpsData->latitude.s[i]);
+	}
+	printf("\n");
 #endif
 
 	// longitude
@@ -365,12 +360,12 @@ printf("\n");
 	}
 
 #ifdef DBG_ENABLE_MACRO
-printf("LONGI:");
-for(i = 0; i < 4; i++)
-{
-	printf("0x%x-", pGpsData->longitude.s[i]);
-}
-printf("\n");
+	printf("LONGI:");
+	for(i = 0; i < 4; i++)
+	{
+		printf("0x%x-", pGpsData->longitude.s[i]);
+	}
+	printf("\n");
 #endif
 
 	// 1 knot = 1.85km/h
@@ -381,52 +376,17 @@ printf("\n");
 	pGpsData->status = rmcInfo.status;
 
 #ifdef DBG_ENABLE_MACRO
-printf("SPEED: 0x%x\n", pGpsData->speed);
-printf("COURSE:");
-for(i = 0; i < 2; i++)
-{
-	printf("0x%x-", pGpsData->course.s[i]);
-}
-printf("\n");
-printf("STATUS: 0x%x\n", pGpsData->status);
+	printf("SPEED: 0x%x\n", pGpsData->speed);
+	printf("COURSE:");
+	for(i = 0; i < 2; i++)
+	{
+		printf("0x%x-", pGpsData->course.s[i]);
+	}
+	printf("\n");
+	printf("STATUS: 0x%x\n", pGpsData->status);
 #endif
 	
 }
 
 
-void GPSShow(void)
-{
-	unsigned int i;
-	
-	int uLen ;
-
-		
-	uLen = strlen(GPS_Einfo);
-    printf("\n GPS_Einfo : ");
-    for (i = 0; i < uLen; i++)
-    {
-        printf("%c", GPS_Einfo[i]);
-    }
-
-	uLen = strlen(GPS_Ninfo);
-    printf("\n GPS_Ninfo : ");
-    for (i = 0; i < uLen; i++)
-    {
-        printf("%c", GPS_Ninfo[i]);
-    }
-
-	uLen = strlen(Altitude_info);
-    printf("\n Altitude_info : ");
-    for (i = 0; i < uLen; i++)
-    {
-        printf("%c", Altitude_info[i]);
-    }
-
-	uLen = strlen(Speed_info);
-    printf("\n Speed_info : ");
-    for (i = 0; i < uLen; i++)
-    {
-        printf("%c", Speed_info[i]);
-    }
-}
 

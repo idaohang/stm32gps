@@ -32,13 +32,13 @@
 #include "GSM_App.h"
 
 //#define RESEND_TIMES_CPIN   3
-#define RESEND_TIMES_COPS   5
+#define RESEND_TIMES_COPS   5   // COPS command resend times
 
 static char BackBuf[USART_GSM_BUFSIZE];
 static char sendBuf[USART_GSM_BUFSIZE_SEND];
 static char receiveBuf[USART_GSM_BUFSIZE_RECEIVE];
 
-unsigned char GSMNetType;
+unsigned char GSMNetType;  // GSM Net type
 
 /*********************************************************************************************************
  ** Function name:       strnchr()
@@ -1237,27 +1237,10 @@ void GSM_StartUpConnect(void)
 }
 
 
-
-void GPS_Init(void)
-{
-    uint32_t len;
-
-    //打开GPS
-    //可根据需要设置GPS输出数据选择 如AT+CGPSOUT=67
-    len = sizeof(AT_CGPSPWR);
-    while (USART_SUCESS != GSM_SendAT((char *) AT_CGPSPWR, (char *) "OK", len));
-    len = sizeof(AT_CGPSRST);
-    while (USART_SUCESS != GSM_SendAT((char *) AT_CGPSRST, (char *) "OK", len));
-}
-
 void GSM_Init(void)
 {
     unsigned char i = 0;
-    unsigned char len;
-
-    //GSM_PowerCtrlInit();
-    //GSM_RingPinInit();
-	//GSM_TurnOnOff();											
+    unsigned char len;										
 
     // AT握手
     len = strlen(AT_Cmd);
@@ -1279,6 +1262,7 @@ void GSM_Init(void)
     //GSM_CheckSIMCard();
     //GPS_Init();
 }
+
 /*********************************************************************************************************
  ** Function name:       GSM_CallNumber
  ** Descriptions:        呼叫一个电话号码
@@ -1549,6 +1533,69 @@ unsigned char GSM_SetSClk(uint32_t value)
 	
     return USART_FAIL;
 }
+
+void GetGsmData(pST_SIMDATA pSimData, ST_IMSIINFO imsi)
+{
+	uint32_t i;
+	ST_CREGINFO creg;
+	ST_BATVOLTAGESTATUS battery;
+	unsigned char signal = 0;
+
+	//while(USART_SUCESS != GSM_QueryImsi(&imsi));
+	if(USART_SUCESS != GSM_QueryCreg(&creg))
+	{
+		DEBUG("Query CREG Fail\n");
+	}
+	if(USART_SUCESS != GSM_QueryBatVoltage(&battery))
+	{
+		DEBUG("Query Bat Voltage Fail\n");
+	}
+	if(USART_SUCESS != GSM_QuerySignal(&signal))
+	{
+		DEBUG("Query Signal Quality Fail\n");
+	}
+
+	pSimData->Station[0] = imsi.Mcc[0];
+	pSimData->Station[1] = imsi.Mcc[1];
+	pSimData->Station[2] = imsi.Mnc[0];
+	pSimData->Station[3] = imsi.Mnc[1];
+	pSimData->Station[4] = creg.Lac[0];
+	pSimData->Station[5] = creg.Lac[1];
+	pSimData->Station[6] = 0x00;  // 补零
+	pSimData->Station[7] = creg.Ci[0];
+	pSimData->Station[8] = creg.Ci[1];
+
+	// when status is valid then parse
+	if(1 == battery.Status)
+	{
+		pSimData->Battery[0] = battery.BatVoltage.s[1];
+		pSimData->Battery[1] = battery.BatVoltage.s[0];
+	}
+
+	sprintf(pSimData->Signal, "%x", signal);
+
+#ifdef DBG_ENABLE_MACRO
+	printf("STATION:");
+	for(i = 0; i < 9; i++)
+	{
+		printf("0x%x-", pSimData->Station[i]);
+	}
+	printf("\n");
+	printf("BATTERY:");
+	for(i = 0; i < 2; i++)
+	{
+		printf("0x%x-", pSimData->Battery[i]);
+	}
+	printf("\n");
+	printf("SIGNAL:");
+	for(i = 0; i < 2; i++)
+	{
+		printf("0x%x-", pSimData->Signal[i]);
+	}
+	printf("\n");
+#endif
+}
+
 
 /*********************************************************************************************************
  ** Function name:       GPRS_Init
@@ -2172,68 +2219,6 @@ void GSM_test_once(void)
 #endif
 }
 
-#define DBG_GSM_DATA
-void GetGsmData(pST_SIMDATA pSimData, ST_IMSIINFO imsi)
-{
-	uint32_t i;
-	ST_CREGINFO creg;
-	ST_BATVOLTAGESTATUS battery;
-	unsigned char signal = 0;
-
-	//while(USART_SUCESS != GSM_QueryImsi(&imsi));
-	if(USART_SUCESS != GSM_QueryCreg(&creg))
-	{
-		printf("Query CREG Fail\n");
-	}
-	if(USART_SUCESS != GSM_QueryBatVoltage(&battery))
-	{
-		printf("Query Bat Voltage Fail\n");
-	}
-	if(USART_SUCESS != GSM_QuerySignal(&signal))
-	{
-		printf("Query Signal Quality Fail\n");
-	}
-
-	pSimData->Station[0] = imsi.Mcc[0];
-	pSimData->Station[1] = imsi.Mcc[1];
-	pSimData->Station[2] = imsi.Mnc[0];
-	pSimData->Station[3] = imsi.Mnc[1];
-	pSimData->Station[4] = creg.Lac[0];
-	pSimData->Station[5] = creg.Lac[1];
-	pSimData->Station[6] = 0x00;  // 补零
-	pSimData->Station[7] = creg.Ci[0];
-	pSimData->Station[8] = creg.Ci[1];
-
-	// when status is valid then parse
-	if(1 == battery.Status)
-	{
-		pSimData->Battery[0] = battery.BatVoltage.s[1];
-		pSimData->Battery[1] = battery.BatVoltage.s[0];
-	}
-
-	sprintf(pSimData->Signal, "%x", signal);
-
-#ifdef DBG_ENABLE_MACRO
-printf("STATION:");
-for(i = 0; i < 9; i++)
-{
-	printf("0x%x-", pSimData->Station[i]);
-}
-printf("\n");
-printf("BATTERY:");
-for(i = 0; i < 2; i++)
-{
-	printf("0x%x-", pSimData->Battery[i]);
-}
-printf("\n");
-printf("SIGNAL:");
-for(i = 0; i < 2; i++)
-{
-	printf("0x%x-", pSimData->Signal[i]);
-}
-printf("\n");
-#endif
-}
 
 void GSM_test(void)
 {

@@ -12,3 +12,18 @@ delay_10ms函数定时准，delay_10ms(100)是1s，该函数是用systick实现。
 
 将printf修改为DEBUG宏定义
 TIM4的函数都去掉
+
+在工程设置中，正式版本去掉DBG_ENABLE_MACRO
+
+
+1. LED指示灯
+在正式版本中如果不焊接，那么在正式软件版本中将不使用。
+2. 
+
+需要确定的参数
+SLEEP_NORMAL_SEC 低功耗模式的睡眠时间 单位sec 建议设置为24hour=86400
+SLEEP_TIM2_RATIO 定时器超时的睡眠时间 =  SLEEP_NORMAL_SEC/SLEEP_TIM2_RATIO，建议设置为6
+GPS_RETERY_TIMES    4  // GPS 重试次数
+GSM_RETERY_TIMES    10 // GSM 错误重发次数
+GSM_SUCCESS_TIMES   1  // GSM 成功发送次数
+

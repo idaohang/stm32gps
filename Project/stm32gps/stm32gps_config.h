@@ -26,38 +26,36 @@
 #include "stm32f10x.h"
 #include "stm32gps_board.h"
 
-// #define MACRO_FOR_TEST  // Should NOT define
-
 #define GSM_SUCCESS_TIMES   1  // GSM 成功发送次数
 #define GPS_RETERY_TIMES    4  // GPS 重试次数 - 1
 #define GSM_RETERY_TIMES    10 // GSM 错误重发次数 - 1
 
 #define SYS_TICK_PER_SEC 100u
 
-#define TIM2_PRESCALER_TIMER 65535
-#define TIM2_PRESCALER_HZ 1000
+#define TIM2_PRESCALER_TIMER 65535 // TIM2 Prescaler
+#define TIM2_PRESCALER_HZ 1000    // TIM2 HZ, Not used
 #define TIM2_PERIOD_TIMER  65534  // 3min  根据需要可修改该定时器的值
 
 #define TIM4_PRESCALER_TIMER 65535
 #define TIM4_PRESCALER_HZ 1000
 #define TIM4_PERIOD_TIMER  35534  // 3min
 
-// RTC Alarm Second [1 - 65535]
+// RTC Alarm Second [1 - 2^32]
 #define SLEEP_TIM2_RATIO  6  // TIM2 sleep time is SLEEP_NORMAL / 6
-#define SLEEP_NORMAL_SEC 30//120 // 2min //1200 // 20min
-#define STOP_GPS_SEC     10  // GPS STOP seconds
+#define SLEEP_NORMAL_SEC 240 // 2min // 86400 // 24hour SHOULD SET 86400 = 24hour
+#define STOP_GPS_SEC     10  // GPS STOP mode seconds
 
-#define AT_RESEND_TIMES  10  // x*100ms
+#define AT_RESEND_TIMES  10  // x*100ms, AT Command Resend times
 
-// #define GSM_SERVER_IP   "121.40.200.84"  // server ip address
+// #define GSM_SERVER_IP   "121.40.200.84"  	// server ip address
 #define GSM_SERVER_IP   "lkf.broadnetwork.net"  // server name
-#define GSM_SERVER_PORT "6666"           // server port
+#define GSM_SERVER_PORT "6666"           		// server port
 
-#define EELINK_LOGIN_MSGLEN  17
-#define EELINK_GPS_MSGLEN    42
-#define EELINK_ALARM_MSGLEN  33
-#define EELINK_LANG  0x01  // English
-#define EELINK_ZONE  0x20  // east 8
+#define EELINK_LOGIN_MSGLEN  17		// login length
+#define EELINK_GPS_MSGLEN    42     // GPS length
+#define EELINK_ALARM_MSGLEN  33     // alarm length
+#define EELINK_LANG  0x01  			// English
+#define EELINK_ZONE  0x20  			// east 8
 
 
 #define USART_GSM_BUFSIZE_SEND 2048
@@ -72,6 +70,7 @@
 #define STM32_SIM908_GPS_COM COM1_GPS
 #define STM32_SIM908_GSM_COM COM2_GSM
 
+// usart baud rate
 #define USART_GSM_BAUD 9600
 #define USART_GPS_BAUD 9600
 #define USART_DBG_BAUD 9600
@@ -80,10 +79,12 @@
 #define RST_OK   0xAA
 #define RST_FAIL 0x55
 
+// bkp register
 #define BKP_FALSE  0x5A5A
 #define BKP_TRUE   0xA5A5
-#define CHECK_REMOVE_TIMES  3  // check removed times
+#define CHECK_REMOVE_TIMES  3  // check removed flag times for changed flag
 
+// used for output debug information
 #ifdef DBG_ENABLE_MACRO
     #define DEBUG(msg, args...) \
         (void)printf(msg , ##args)
@@ -100,7 +101,7 @@
     #define DBG_ERRO
 #endif // USE_DEBUG
 
-
+// BKP register
 typedef enum 
 {
   BKP_REMOVE_FLAG = 0,

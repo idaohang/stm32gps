@@ -254,11 +254,7 @@ void TIM2_IRQHandler(void)
 	if ( TIM_GetITStatus(TIM2 , TIM_IT_Update) != RESET ) 
 	{	
 		TIM_ClearITPendingBit(TIM2 , TIM_FLAG_Update);
-#ifdef MACRO_FOR_TEST
-		STM_EVAL_LEDToggle(LED1);
-#endif
-		DEBUG("going in timer2 standby mode\n");
-#if 1
+
 		/////////////////////////////////////////////////////////////////
 		// Power OFF GPS and GSM before go into standby mode
 		/////////////////////////////////////////////////////////////////
@@ -288,7 +284,6 @@ void TIM2_IRQHandler(void)
 		RTC_WaitForLastTask();		
 		/* Request to enter STANDBY mode (Wake Up flag is cleared in PWR_EnterSTANDBYMode function) */
 		PWR_EnterSTANDBYMode();
-#endif
 	}		 	
 }
 
