@@ -270,9 +270,19 @@ void TIM2_IRQHandler(void)
 		/* Wait till RTC Second event occurs */
 		RTC_ClearFlag(RTC_FLAG_SEC);
 		while(RTC_GetFlagStatus(RTC_FLAG_SEC) == RESET);
+
+		// normal working state
+		if((BKP_TRUE == BKP_ReadBackupRegister(BKP_DR1)) 
+			&& (BKP_ReadBackupRegister(BKP_DR2) > 0))
+		{
+			/* Set the RTC Alarm after xx s */
+			RTC_SetAlarm(RTC_GetCounter()+ (BKP_ReadBackupRegister(BKP_DR4)/SLEEP_TIM2_RATIO));
+		}
+		else
+		{
+			RTC_SetAlarm(RTC_GetCounter()+ (SLEEP_NORMAL_SEC/SLEEP_TIM2_RATIO));
+		}
 	
-		/* Set the RTC Alarm after xx s */
-		RTC_SetAlarm(RTC_GetCounter()+ SLEEP_TIM2_SEC);
 		/* Wait until last write operation on RTC registers has finished */
 		RTC_WaitForLastTask();		
 		/* Request to enter STANDBY mode (Wake Up flag is cleared in PWR_EnterSTANDBYMode function) */

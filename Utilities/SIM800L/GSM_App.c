@@ -1666,6 +1666,90 @@ unsigned char GPRS_SendData(char *pString, unsigned int len)
     }
     return USART_SUCESS;
 }
+
+/**
+  * @brief  Send GPRS Data
+  * @param  None
+  * @retval None
+  */
+unsigned char GPRS_SendData_rsp(char *pString, unsigned int len, char **ppRecvBuf, uint32_t *pRecvLen)
+{
+	char *pBackBuf = BackBuf;
+    unsigned int cmdLen;
+
+    cmdLen = strlen(AT_CIPSEND);
+    if (USART_SUCESS == GSM_SendAT((char *) AT_CIPSEND, (char *) '>', cmdLen))
+    {
+        cmdLen = sizeof(pString);
+        usart_sendbuffer(STM32_SIM908_GSM_COM, pString, &len);
+        cmdLen = 1;
+        usart_sendbuffer(STM32_SIM908_GSM_COM, "\x1A", &cmdLen);
+        //return USART_SUCESS;
+    }
+
+    {
+        uint32_t i = 5;
+        uint32_t len;
+        unsigned char retFlag;
+
+        while (--i)
+        {
+            len = USART_GSM_BUFSIZE;
+            delay_10ms(20);
+
+            //printf("GSM_SendAT before usart_readbuffer len %d\n", len);
+
+            retFlag =
+                    usart_readbuffer(STM32_SIM908_GSM_COM, BackBuf, &len);
+            //printf("GSM_SendAT after usart_readbuffer len %d\n", len);
+
+#ifdef DBG_ENABLE_MACRO
+            {
+                uint32_t tmpIdx;
+				uint32_t tmpStart;
+
+                if (len > 0 && retFlag == USART_ENPROCESS)
+                {
+                    printf("GPRS_SendData recv\r\n");
+                    for (tmpIdx = 0; tmpIdx < len; tmpIdx ++)
+                    {
+                        //printf("%d-%c\r\n", tmpIdx, pBackBuf[tmpIdx]);
+                        printf("%c",BackBuf[tmpIdx]);
+						
+                    }
+                    printf("\r\n");
+                    printf("GPRS_SendData done\r\n");
+                }
+            }
+			printf("%d retFlag = %d len = %d\n\n", i, retFlag, len);
+#endif
+			if (len > 0 && retFlag == USART_ENPROCESS)
+            {
+				if (ppRecvBuf != NULL)
+	            {
+	                *ppRecvBuf = pBackBuf;
+	            }
+
+	            if (pRecvLen != NULL)
+	            {
+	                *pRecvLen = len;
+	            }
+				
+                if (NULL != strstr_len(pBackBuf, "SEND OK", len))
+                {
+                    break;
+                }
+            }
+
+        }
+        if (i == 0)
+        {
+            return USART_FAIL;
+        }
+    }
+    return USART_SUCESS;
+}
+
 /*********************************************************************************************************
  ** Function name:       GPRS_ReceiveData
  ** Descriptions:      	GPRS接收数据,SIM908直接串口接收,不需要发送指令读取

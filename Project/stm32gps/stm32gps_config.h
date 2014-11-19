@@ -28,7 +28,7 @@
 
 // #define MACRO_FOR_TEST  // Should NOT define
 
-#define GSM_SUCCESS_TIMES   4  // GSM 成功发送次数
+#define GSM_SUCCESS_TIMES   1  // GSM 成功发送次数
 #define GPS_RETERY_TIMES    4  // GPS 重试次数 - 1
 #define GSM_RETERY_TIMES    10 // GSM 错误重发次数 - 1
 
@@ -43,8 +43,9 @@
 #define TIM4_PERIOD_TIMER  35534  // 3min
 
 // RTC Alarm Second [1 - 65535]
-#define SLEEP_TIM2_SEC  30//30sec 600 // 10 min
+#define SLEEP_TIM2_RATIO  6  // TIM2 sleep time is SLEEP_NORMAL / 6
 #define SLEEP_NORMAL_SEC 120 // 2min //1200 // 20min
+#define STOP_GPS_SEC     10  // GPS STOP seconds
 
 #define AT_RESEND_TIMES  10  // x*100ms
 
@@ -54,6 +55,7 @@
 
 #define EELINK_LOGIN_MSGLEN  17
 #define EELINK_GPS_MSGLEN    42
+#define EELINK_ALARM_MSGLEN  33
 #define EELINK_LANG  0x01  // English
 #define EELINK_ZONE  0x20  // east 8
 
@@ -78,6 +80,10 @@
 #define RST_OK   0xAA
 #define RST_FAIL 0x55
 
+#define BKP_FALSE  0x5A5A
+#define BKP_TRUE   0xA5A5
+#define CHECK_REMOVE_TIMES  3  // check removed times
+
 #ifdef DBG_ENABLE_MACRO
     #define DEBUG(msg, args...) \
         (void)printf(msg , ##args)
@@ -97,10 +103,11 @@
 
 typedef enum 
 {
-  REMOVAL_FLAG = 0,
-  REMOVAL_NOT = 1,
-  REMOVAL_YES = 2
-} REMOVAL_TypeDef;
+  BKP_REMOVE_FLAG = 0,
+  BKP_REMOVE_NOT = 1,
+  BKP_REMOVE_YES = 2,
+  BKP_SLEEP_TIME = 3
+} REMOVE_TypeDef;
 
 
 /* Exported functions ------------------------------------------------------- */
