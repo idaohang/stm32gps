@@ -9,8 +9,11 @@ Project File Date:  11/16/2014
 <h2>Output:</h2>
 Build target 'Debug'
 compiling main.c...
+..\stm32gps_config.h(107): error:  #256: invalid redeclaration of type name "BKP_TypeDef" (declared at line 663 of "..\..\..\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\stm32f10x.h")
 compiling stm32f10x_it.c...
+..\stm32gps_config.h(107): error:  #256: invalid redeclaration of type name "BKP_TypeDef" (declared at line 663 of "..\..\..\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\stm32f10x.h")
 compiling stm32gps_config.c...
+..\stm32gps_config.h(107): error:  #256: invalid redeclaration of type name "BKP_TypeDef" (declared at line 663 of "..\..\..\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\stm32f10x.h")
 ..\stm32gps_config.c(217): warning:  #550-D: variable "PrescalerValue" was set but never used
 ..\stm32gps_config.c(245): warning:  #550-D: variable "PrescalerValue" was set but never used
 compiling gpio.c...
@@ -35,6 +38,61 @@ compiling stm32gps_board.c...
 ..\..\..\Utilities\STM32_GPS\STM32_GPS_BOARD_VB/stm32_gps_board.c(208): warning:  #550-D: variable "data" was set but never used
 assembling startup_stm32f10x_hd.s...
 compiling usart.c...
+..\..\stm32gps\stm32gps_config.h(107): error:  #256: invalid redeclaration of type name "BKP_TypeDef" (declared at line 663 of "..\..\..\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\stm32f10x.h")
+compiling GPS_App.c...
+..\..\stm32gps\stm32gps_config.h(107): error:  #256: invalid redeclaration of type name "BKP_TypeDef" (declared at line 663 of "..\..\..\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\stm32f10x.h")
+..\..\..\Utilities\SIM28M\GPS_App.c(75): warning:  #550-D: variable "valid" was set but never used
+..\..\..\Utilities\SIM28M\GPS_App.c(306): warning:  #177-D: variable "valid" was declared but never referenced
+compiling GSM_App.c...
+..\..\stm32gps\stm32gps_config.h(107): error:  #256: invalid redeclaration of type name "BKP_TypeDef" (declared at line 663 of "..\..\..\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\stm32f10x.h")
+..\..\..\Utilities\SIM800L\GSM_App.c(724): warning:  #177-D: variable "pcmdbuf" was declared but never referenced
+..\..\..\Utilities\SIM800L\GSM_App.c(1636): warning:  #177-D: variable "tmpStart" was declared but never referenced
+..\..\..\Utilities\SIM800L\GSM_App.c(2106): warning:  #167-D: argument of type "unsigned char *" is incompatible with parameter of type "char *restrict"
+..\..\..\Utilities\SIM800L\GSM_App.c(2138): warning:  #177-D: variable "creg" was declared but never referenced
+Target not created
+Build target 'Debug'
+compiling main.c...
+..\stm32gps_config.h(109): error:  #256: invalid redeclaration of type name "BKP_TypeDef" (declared at line 663 of "..\..\..\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\stm32f10x.h")
+..\main.c(537): error:  #18: expected a ")"
+..\main.c(574): warning:  #12-D: parsing restarts here after previous syntax error
+..\main.c(574): error:  #127: expected a statement
+compiling stm32f10x_it.c...
+..\stm32gps_config.h(109): error:  #256: invalid redeclaration of type name "BKP_TypeDef" (declared at line 663 of "..\..\..\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\stm32f10x.h")
+..\stm32f10x_it.c(275): error:  #20: identifier "BKPDataReg" is undefined
+..\stm32f10x_it.c(277): error:  #18: expected a ")"
+..\stm32f10x_it.c(291): warning:  #12-D: parsing restarts here after previous syntax error
+..\stm32f10x_it.c(291): error:  #127: expected a statement
+compiling stm32gps_config.c...
+..\stm32gps_config.h(109): error:  #256: invalid redeclaration of type name "BKP_TypeDef" (declared at line 663 of "..\..\..\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\stm32f10x.h")
+..\stm32gps_config.c(217): warning:  #550-D: variable "PrescalerValue" was set but never used
+..\stm32gps_config.c(245): warning:  #550-D: variable "PrescalerValue" was set but never used
+compiling usart.c...
+..\..\stm32gps\stm32gps_config.h(109): error:  #256: invalid redeclaration of type name "BKP_TypeDef" (declared at line 663 of "..\..\..\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\stm32f10x.h")
+compiling GPS_App.c...
+..\..\stm32gps\stm32gps_config.h(109): error:  #256: invalid redeclaration of type name "BKP_TypeDef" (declared at line 663 of "..\..\..\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\stm32f10x.h")
+..\..\..\Utilities\SIM28M\GPS_App.c(75): warning:  #550-D: variable "valid" was set but never used
+..\..\..\Utilities\SIM28M\GPS_App.c(306): warning:  #177-D: variable "valid" was declared but never referenced
+compiling GSM_App.c...
+..\..\stm32gps\stm32gps_config.h(109): error:  #256: invalid redeclaration of type name "BKP_TypeDef" (declared at line 663 of "..\..\..\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\stm32f10x.h")
+..\..\..\Utilities\SIM800L\GSM_App.c(724): warning:  #177-D: variable "pcmdbuf" was declared but never referenced
+..\..\..\Utilities\SIM800L\GSM_App.c(1636): warning:  #177-D: variable "tmpStart" was declared but never referenced
+..\..\..\Utilities\SIM800L\GSM_App.c(2106): warning:  #167-D: argument of type "unsigned char *" is incompatible with parameter of type "char *restrict"
+..\..\..\Utilities\SIM800L\GSM_App.c(2138): warning:  #177-D: variable "creg" was declared but never referenced
+Target not created
+Build target 'Debug'
+compiling main.c...
+..\main.c(537): error:  #18: expected a ")"
+..\main.c(574): warning:  #12-D: parsing restarts here after previous syntax error
+..\main.c(574): error:  #127: expected a statement
+compiling stm32f10x_it.c...
+..\stm32f10x_it.c(275): error:  #20: identifier "BKPDataReg" is undefined
+..\stm32f10x_it.c(277): error:  #18: expected a ")"
+..\stm32f10x_it.c(291): warning:  #12-D: parsing restarts here after previous syntax error
+..\stm32f10x_it.c(291): error:  #127: expected a statement
+compiling stm32gps_config.c...
+..\stm32gps_config.c(217): warning:  #550-D: variable "PrescalerValue" was set but never used
+..\stm32gps_config.c(245): warning:  #550-D: variable "PrescalerValue" was set but never used
+compiling usart.c...
 compiling GPS_App.c...
 ..\..\..\Utilities\SIM28M\GPS_App.c(75): warning:  #550-D: variable "valid" was set but never used
 ..\..\..\Utilities\SIM28M\GPS_App.c(306): warning:  #177-D: variable "valid" was declared but never referenced
@@ -43,10 +101,59 @@ compiling GSM_App.c...
 ..\..\..\Utilities\SIM800L\GSM_App.c(1636): warning:  #177-D: variable "tmpStart" was declared but never referenced
 ..\..\..\Utilities\SIM800L\GSM_App.c(2106): warning:  #167-D: argument of type "unsigned char *" is incompatible with parameter of type "char *restrict"
 ..\..\..\Utilities\SIM800L\GSM_App.c(2138): warning:  #177-D: variable "creg" was declared but never referenced
+Target not created
+Build target 'Debug'
+compiling main.c...
+compiling stm32f10x_it.c...
+..\stm32f10x_it.c(275): error:  #20: identifier "BKPDataReg" is undefined
+..\stm32f10x_it.c(277): error:  #18: expected a ")"
+..\stm32f10x_it.c(291): warning:  #12-D: parsing restarts here after previous syntax error
+..\stm32f10x_it.c(291): error:  #127: expected a statement
+Target not created
+Build target 'Debug'
+compiling stm32f10x_it.c...
+..\stm32f10x_it.c(275): error:  #18: expected a ")"
+..\stm32f10x_it.c(279): error:  #20: identifier "BKPDataReg" is undefined
+Target not created
+Build target 'Debug'
+compiling stm32f10x_it.c...
+..\stm32f10x_it.c(279): error:  #20: identifier "BKPDataReg" is undefined
+Target not created
+Build target 'Debug'
+compiling stm32f10x_it.c...
 linking...
-Program Size: Code=29224 RO-data=1176 RW-data=440 ZI-data=8664  
+Program Size: Code=29844 RO-data=1176 RW-data=440 ZI-data=8608  
 FromELF: creating hex file...
-".\STM32GPS\stm32gps.axf" - 0 Error(s), 9 Warning(s).
+".\STM32GPS\stm32gps.axf" - 0 Error(s), 0 Warning(s).
+Build target 'Debug'
+linking...
+Program Size: Code=29844 RO-data=1176 RW-data=440 ZI-data=8608  
+FromELF: creating hex file...
+".\STM32GPS\stm32gps.axf" - 0 Error(s), 0 Warning(s).
+Build target 'Debug'
+compiling main.c...
+..\main.c(475): warning:  #223-D: function "PackAlarmMsg" declared implicitly
+..\main.c(822): error:  #159: declaration is incompatible with previous "PackAlarmMsg" (declared at line 475)
+compiling stm32f10x_it.c...
+compiling stm32gps_config.c...
+..\stm32gps_config.c(217): warning:  #550-D: variable "PrescalerValue" was set but never used
+..\stm32gps_config.c(245): warning:  #550-D: variable "PrescalerValue" was set but never used
+compiling usart.c...
+compiling GPS_App.c...
+..\..\..\Utilities\SIM28M\GPS_App.c(75): warning:  #550-D: variable "valid" was set but never used
+..\..\..\Utilities\SIM28M\GPS_App.c(306): warning:  #177-D: variable "valid" was declared but never referenced
+compiling GSM_App.c...
+..\..\..\Utilities\SIM800L\GSM_App.c(724): warning:  #177-D: variable "pcmdbuf" was declared but never referenced
+..\..\..\Utilities\SIM800L\GSM_App.c(1636): warning:  #177-D: variable "tmpStart" was declared but never referenced
+..\..\..\Utilities\SIM800L\GSM_App.c(2106): warning:  #167-D: argument of type "unsigned char *" is incompatible with parameter of type "char *restrict"
+..\..\..\Utilities\SIM800L\GSM_App.c(2138): warning:  #177-D: variable "creg" was declared but never referenced
+Target not created
+Build target 'Debug'
+compiling main.c...
+linking...
+Program Size: Code=30196 RO-data=1176 RW-data=440 ZI-data=8608  
+FromELF: creating hex file...
+".\STM32GPS\stm32gps.axf" - 0 Error(s), 0 Warning(s).
 Load "D:\\GitHub\\stm32gps\\Project\\stm32gps\\MDK-ARM\\STM32GPS\\stm32gps.AXF" 
 * JLink Info: Device "STM32F103RC" selected (256 KB flash, 48 KB RAM).
 Set JLink Project File to "D:\GitHub\stm32gps\Project\stm32gps\MDK-ARM\JLinkSettings.ini"
@@ -70,7 +177,7 @@ ROMTableAddr = 0xE00FF003
 Target info:
 ------------
 Device: STM32F103RC
-VTarget = 3.183V
+VTarget = 3.196V
 State of Pins: 
 TCK: 0, TDI: 0, TDO: 0, TMS: 1, TRES: 1, TRST: 1
 Hardware-Breakpoints: 6
@@ -81,6 +188,92 @@ JTAG speed: 2000 kHz
 Erase Done.
 Programming Done.
 Verify OK.
+Build target 'Debug'
+compiling main.c...
+..\main.c(436): warning:  #223-D: function "GPRS_SendData_rsp" declared implicitly
+compiling stm32f10x_it.c...
+compiling GPS_App.c...
+..\..\..\Utilities\SIM28M\GPS_App.c(75): warning:  #550-D: variable "valid" was set but never used
+..\..\..\Utilities\SIM28M\GPS_App.c(306): warning:  #177-D: variable "valid" was declared but never referenced
+compiling GSM_App.c...
+..\..\..\Utilities\SIM800L\GSM_App.c(724): warning:  #177-D: variable "pcmdbuf" was declared but never referenced
+..\..\..\Utilities\SIM800L\GSM_App.c(1636): warning:  #177-D: variable "tmpStart" was declared but never referenced
+..\..\..\Utilities\SIM800L\GSM_App.c(1709): warning:  #177-D: variable "tmpStart" was declared but never referenced
+..\..\..\Utilities\SIM800L\GSM_App.c(2190): warning:  #167-D: argument of type "unsigned char *" is incompatible with parameter of type "char *restrict"
+..\..\..\Utilities\SIM800L\GSM_App.c(2222): warning:  #177-D: variable "creg" was declared but never referenced
+linking...
+Program Size: Code=30500 RO-data=1176 RW-data=440 ZI-data=8608  
+FromELF: creating hex file...
+".\STM32GPS\stm32gps.axf" - 0 Error(s), 8 Warning(s).
+Build target 'Debug'
+compiling main.c...
+..\main.c(436): warning:  #223-D: function "GPRS_SendData_rsp" declared implicitly
+compiling stm32f10x_it.c...
+compiling stm32gps_config.c...
+..\stm32gps_config.c(217): warning:  #550-D: variable "PrescalerValue" was set but never used
+..\stm32gps_config.c(245): warning:  #550-D: variable "PrescalerValue" was set but never used
+compiling usart.c...
+compiling GPS_App.c...
+..\..\..\Utilities\SIM28M\GPS_App.c(75): warning:  #550-D: variable "valid" was set but never used
+..\..\..\Utilities\SIM28M\GPS_App.c(306): warning:  #177-D: variable "valid" was declared but never referenced
+compiling GSM_App.c...
+..\..\..\Utilities\SIM800L\GSM_App.c(724): warning:  #177-D: variable "pcmdbuf" was declared but never referenced
+..\..\..\Utilities\SIM800L\GSM_App.c(1636): warning:  #177-D: variable "tmpStart" was declared but never referenced
+..\..\..\Utilities\SIM800L\GSM_App.c(1709): warning:  #177-D: variable "tmpStart" was declared but never referenced
+..\..\..\Utilities\SIM800L\GSM_App.c(2190): warning:  #167-D: argument of type "unsigned char *" is incompatible with parameter of type "char *restrict"
+..\..\..\Utilities\SIM800L\GSM_App.c(2222): warning:  #177-D: variable "creg" was declared but never referenced
+linking...
+Program Size: Code=30500 RO-data=1176 RW-data=440 ZI-data=8608  
+FromELF: creating hex file...
+".\STM32GPS\stm32gps.axf" - 0 Error(s), 10 Warning(s).
+Build target 'Debug'
+compiling main.c...
+..\main.c(436): warning:  #223-D: function "GPRS_SendData_rsp" declared implicitly
+linking...
+Program Size: Code=30560 RO-data=1176 RW-data=440 ZI-data=8608  
+FromELF: creating hex file...
+".\STM32GPS\stm32gps.axf" - 0 Error(s), 1 Warning(s).
+Load "D:\\GitHub\\stm32gps\\Project\\stm32gps\\MDK-ARM\\STM32GPS\\stm32gps.AXF" 
+* JLink Info: Device "STM32F103RC" selected (256 KB flash, 48 KB RAM).
+Set JLink Project File to "D:\GitHub\stm32gps\Project\stm32gps\MDK-ARM\JLinkSettings.ini"
+ 
+JLink info:
+------------
+DLL: V4.90d, compiled Aug 29 2014 14:49:16
+Firmware: J-Link ARM V8 compiled Jul 17 2014 12:31:18
+Hardware: V8.00
+S/N : 17935099 
+Feature(s) : RDI,FlashDL,FlashBP,JFlash 
+ 
+* JLink Info: Found SWD-DP with ID 0x1BA01477
+* JLink Info: Found SWD-DP with ID 0x1BA01477
+* JLink Info: Found Cortex-M3 r1p1, Little endian.
+* JLink Info: FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: TPIU fitted.
+* JLink Info: ETM fitted.
+ROMTableAddr = 0xE00FF003
+ 
+Target info:
+------------
+Device: STM32F103RC
+VTarget = 3.190V
+State of Pins: 
+TCK: 0, TDI: 0, TDO: 0, TMS: 1, TRES: 1, TRST: 1
+Hardware-Breakpoints: 6
+Software-Breakpoints: 8192
+Watchpoints:          4
+JTAG speed: 2000 kHz
+ 
+Erase Done.
+Programming Done.
+Verify OK.
+Build target 'Debug'
+compiling main.c...
+..\main.c(434): warning:  #223-D: function "GPRS_SendData_rsp" declared implicitly
+linking...
+Program Size: Code=30560 RO-data=1176 RW-data=440 ZI-data=8608  
+FromELF: creating hex file...
+".\STM32GPS\stm32gps.axf" - 0 Error(s), 1 Warning(s).
 Clean started: Project: 'stm32gps'
    deleting intermediate output files for target 'Debug'
    deleting intermediate output files for target 'Release'

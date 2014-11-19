@@ -367,7 +367,7 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>1</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
       <TopLine>250</TopLine>
       <CurrentLine>255</CurrentLine>
@@ -395,10 +395,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>30</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
       <TopLine>1</TopLine>
-      <CurrentLine>1</CurrentLine>
+      <CurrentLine>16</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\stm32gps_config.c</PathWithFileName>
       <FilenameWithoutPath>stm32gps_config.c</FilenameWithoutPath>
@@ -684,7 +684,7 @@
       <Focus>0</Focus>
       <ColumnNumber>29</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>37</TopLine>
+      <TopLine>41</TopLine>
       <CurrentLine>47</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Utilities\STM32_GPS\stm32gps_board.c</PathWithFileName>
@@ -798,9 +798,9 @@
   </Group>
 
   <AlienFiles>
-    <PathWithFilename>D:\GitHub\stm32gps\Project\stm32gps\stm32gps_config.h</PathWithFilename>
-    <TopLine>33</TopLine>
-    <CurrentLine>39</CurrentLine>
+    <PathWithFilename>D:\GitHub\stm32gps\Utilities\STM32_GPS\STM32_GPS_BOARD_VA\stm32_gps_board.c</PathWithFilename>
+    <TopLine>203</TopLine>
+    <CurrentLine>209</CurrentLine>
     <Constant>0</Constant>
     <WindowPosition>
       <length>0</length>
@@ -824,9 +824,9 @@
   </AlienFiles>
 
   <AlienFiles>
-    <PathWithFilename>D:\GitHub\stm32gps\Utilities\STM32_GPS\STM32_GPS_BOARD_VA\stm32_gps_board.c</PathWithFilename>
-    <TopLine>202</TopLine>
-    <CurrentLine>209</CurrentLine>
+    <PathWithFilename>D:\GitHub\stm32gps\Project\stm32gps\stm32gps_config.h</PathWithFilename>
+    <TopLine>33</TopLine>
+    <CurrentLine>39</CurrentLine>
     <Constant>0</Constant>
     <WindowPosition>
       <length>0</length>
@@ -858,15 +858,15 @@
       <Documents>
         <Doc>
           <Name>..\main.c</Name>
-          <ColumnNumber>1</ColumnNumber>
+          <ColumnNumber>0</ColumnNumber>
           <TopLine>250</TopLine>
           <CurrentLine>255</CurrentLine>
         </Doc>
         <Doc>
           <Name>..\stm32gps_config.c</Name>
-          <ColumnNumber>0</ColumnNumber>
+          <ColumnNumber>30</ColumnNumber>
           <TopLine>1</TopLine>
-          <CurrentLine>1</CurrentLine>
+          <CurrentLine>16</CurrentLine>
         </Doc>
         <Doc>
           <Name>..\stm32gps_config.h</Name>
@@ -877,13 +877,13 @@
         <Doc>
           <Name>..\..\..\Utilities\STM32_GPS\stm32gps_board.c</Name>
           <ColumnNumber>29</ColumnNumber>
-          <TopLine>37</TopLine>
+          <TopLine>41</TopLine>
           <CurrentLine>47</CurrentLine>
         </Doc>
         <Doc>
           <Name>D:\GitHub\stm32gps\Utilities\STM32_GPS\STM32_GPS_BOARD_VA\stm32_gps_board.c</Name>
           <ColumnNumber>19</ColumnNumber>
-          <TopLine>202</TopLine>
+          <TopLine>203</TopLine>
           <CurrentLine>209</CurrentLine>
         </Doc>
         <Doc>
