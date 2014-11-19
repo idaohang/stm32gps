@@ -270,6 +270,7 @@ int main(void)
 		&& (BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_NOT]) > CHECK_REMOVE_TIMES))
 	{
 		BKP_WriteBackupRegister(BKPDataReg[BKP_REMOVE_FLAG], (uint16_t)(BKP_TRUE));
+		printf("setting bkp_flag true\n");
 	}
 
 	// reset remove flag
@@ -277,14 +278,15 @@ int main(void)
 		&& (BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_YES]) > CHECK_REMOVE_TIMES))
 	{
 		BKP_WriteBackupRegister(BKPDataReg[BKP_REMOVE_FLAG], (uint16_t)(BKP_FALSE));
+		printf("setting bkp_flag false\n");
 	}
 	
 	// have removed
 	if((uint8_t)Bit_SET == getRemovalFlag())
 	{
 		removeNum = BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_YES]);
-		printf("remove YES num = %d\n", removeNum);
 		removeNum++;
+		printf("YES removalnum = %d\n", removeNum);
 		BKP_WriteBackupRegister(BKPDataReg[BKP_REMOVE_YES], removeNum);
 		BKP_WriteBackupRegister(BKPDataReg[BKP_REMOVE_NOT], 0);
 	}
@@ -293,8 +295,9 @@ int main(void)
 	if((uint8_t)Bit_RESET == getRemovalFlag()) 
 	{
 		removeNum= BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_NOT]);
-		printf("NOT removalnum = %d\n", removeNum);
+		
 		removeNum++;
+		printf("NOT removalnum = %d\n", removeNum);
 		BKP_WriteBackupRegister(BKPDataReg[BKP_REMOVE_NOT], removeNum);
 		BKP_WriteBackupRegister(BKPDataReg[BKP_REMOVE_YES], 0);
 	}
@@ -386,6 +389,7 @@ int main(void)
 		//GetGsmData(&g_simData, g_imsiInfo);
 		GSM_test();
 #endif
+//GSM_QueryNumber();
 		/////////////////////////////////////////////////////////////////
 		// While loop to check network registration status
 		/////////////////////////////////////////////////////////////////
@@ -436,7 +440,7 @@ int main(void)
 			STM_EVAL_LEDToggle(LED1);
 			printf("GPRS_SendData LOGIN MSG Fail\n");
 		}
-
+#if 0
 		// parse response data
 		pfeed = strstr_len(pRecvBuf, "gg", recvLen);
 		if(pfeed != NULL)
@@ -444,7 +448,7 @@ int main(void)
 			printf("\r\n 2= 0x%x-", *(pfeed+2));
 		}
 		printf("\r\n");
-
+#endif
 		/////////////////////////////////////////////////////////////////
 		// Query SIM IMSI and Analyze
 		/////////////////////////////////////////////////////////////////
@@ -482,15 +486,17 @@ int main(void)
 
 			// remove alarm
 			if((BKP_TRUE == BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_FLAG]))
-				&&(BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_YES]) > 0))
+				&&((BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_YES]) > 0)))
 			{
 				PackAlarmMsg();
 				sendLen = EELINK_ALARM_MSGLEN;
+				printf("send alarmmsg\n");
 			}
 			else
 			{
 				PackGpsMsg();
 				sendLen = EELINK_GPS_MSGLEN;
+				printf("send gpsmsg\n");
 			}
 
 			/////////////////////////////////////////////////////////////////
@@ -509,9 +515,14 @@ int main(void)
 				}
 				printf("GPRS_SendData Fail\n");
 			}
+			else
+			{
+
+				// Increase success number
+				g_successNum++;
+			}
+			
 #ifndef MACRO_FOR_TEST
-			// Increase success number
-			g_successNum++;
 			// if send ok then into sleep
 			if(g_successNum > GSM_SUCCESS_TIMES)
 			{
@@ -559,8 +570,7 @@ int main(void)
 	while(RTC_GetFlagStatus(RTC_FLAG_SEC) == RESET);
 
 	// normal working state
-	if((BKP_TRUE == BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_FLAG])) 
-		&& (BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_NOT] > 0)))
+	if(BKP_TRUE == BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_FLAG]))
 	{
 printf("normal working state\n");
 		/* Set the RTC Alarm after xx s */
@@ -885,6 +895,7 @@ void PackAlarmMsg(void)
 	gpsBuf[offset] = gpsMsg.gps_valid;
 	offset++;
 	gpsBuf[offset] = 0x71;  // remove alarm flag
+	offset++;
 	
 	if(offset != (EELINK_ALARM_MSGLEN))
 	{

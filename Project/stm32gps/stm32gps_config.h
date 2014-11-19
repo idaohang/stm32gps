@@ -44,7 +44,7 @@
 
 // RTC Alarm Second [1 - 65535]
 #define SLEEP_TIM2_RATIO  6  // TIM2 sleep time is SLEEP_NORMAL / 6
-#define SLEEP_NORMAL_SEC 120 // 2min //1200 // 20min
+#define SLEEP_NORMAL_SEC 30//120 // 2min //1200 // 20min
 #define STOP_GPS_SEC     10  // GPS STOP seconds
 
 #define AT_RESEND_TIMES  10  // x*100ms

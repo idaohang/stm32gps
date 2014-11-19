@@ -51,6 +51,7 @@ const char AT_CIMI[]    = "AT+CIMI\r";
 const char AT_CSCLK_SET[]   = "AT+CSCLK=%d\r";
 const char AT_CENG_SET[] = "AT+CENG=%d\r";
 const char AT_CENG[] = "AT+CENG?\r";
+const char AT_CNUM[]     =   "AT+CNUM\r";
 
 // gps command
 const char AT_CGPSPWR[] =       "AT+CGPSPWR=1\r";

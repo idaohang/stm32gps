@@ -272,14 +272,15 @@ void TIM2_IRQHandler(void)
 		while(RTC_GetFlagStatus(RTC_FLAG_SEC) == RESET);
 
 		// normal working state
-		if((BKP_TRUE == BKP_ReadBackupRegister(BKP_DR1)) 
-			&& (BKP_ReadBackupRegister(BKP_DR2) > 0))
+		if(BKP_TRUE == BKP_ReadBackupRegister(BKP_DR1))
 		{
 			/* Set the RTC Alarm after xx s */
+			DEBUG("in timer2 bkptrue %d\n", BKP_ReadBackupRegister(BKP_DR4));
 			RTC_SetAlarm(RTC_GetCounter()+ (BKP_ReadBackupRegister(BKP_DR4)/SLEEP_TIM2_RATIO));
 		}
 		else
 		{
+			DEBUG("in timer2 bkpfalse\n");
 			RTC_SetAlarm(RTC_GetCounter()+ (SLEEP_NORMAL_SEC/SLEEP_TIM2_RATIO));
 		}
 	

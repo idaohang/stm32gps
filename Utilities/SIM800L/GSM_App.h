@@ -107,6 +107,8 @@ unsigned char GSM_QuerySignal(unsigned char *pSig);
 unsigned char GSM_QueryImei(uint8_t *pImei);
 unsigned char GSM_QueryImsi(pST_IMSIINFO pImsiInfo);
 unsigned char GSM_QueryCreg(pST_CREGINFO pCregInfo);
+unsigned char GSM_QueryNumber(void);
+
 unsigned char GSM_CallNumber(char *pNumber);
 unsigned char GSM_ReadNumberFromSIM(unsigned char No, ST_PHONEBOOKS *pNumber);
 unsigned char GSM_CallSIMNumber(unsigned char numberNo);
@@ -135,6 +137,7 @@ unsigned char GPRS_LinkServer(pST_NETWORKCONFIG pnetconfig);
 unsigned char GPRS_CloseLink(void);
 unsigned char GPRS_CIPShut(void);
 unsigned char GPRS_SendData(char *pString, unsigned int len);
+unsigned char GPRS_SendData_rsp(char *pString, unsigned int len, char **ppRecvBuf, uint32_t *pRecvLen);
 unsigned char GSM_QueryBattery(pST_BATTERYSTATUS pSig);
 
 void GetGsmData(pST_SIMDATA pSimData, ST_IMSIINFO imsi);

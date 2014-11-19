@@ -721,7 +721,6 @@ unsigned char GSM_QueryImsi(pST_IMSIINFO pImsiInfo)
  *********************************************************************************************************/
 unsigned char GSM_QueryCreg(pST_CREGINFO pCregInfo)
 {
-	static char *pcmdbuf = NULL;
     unsigned int cmdLen = 0;
     char *pRecvBuf = NULL;
     uint32_t recvLen = 0;
@@ -829,6 +828,31 @@ unsigned char GSM_QueryBatVoltage(pST_BATVOLTAGESTATUS pSig)
     }
     return USART_FAIL;
 }
+
+
+/**
+  * @brief  Request TA Serial Number Identification (IMEI)
+  * @param  pImei: pointer of IMEI
+  * @retval STATUS
+  */
+//unsigned char GSM_QueryNumber(uint8_t *pNum)
+unsigned char GSM_QueryNumber(void)
+{
+    unsigned int cmdLen;
+	char *pRecvBuf = NULL;
+    uint32_t recvLen = 0;
+
+    cmdLen = strlen(AT_CNUM);
+    GSM_ClearBuffer();
+    if (USART_SUCESS == GSM_SendAT_rsp((char *)AT_CNUM, (char *)AT_OK, cmdLen, &pRecvBuf, &recvLen))
+    {
+		
+		
+        return USART_SUCESS;
+    }
+    return USART_FAIL;
+}
+
 
 /*********************************************************************************************************
  ** Function name:       GSM_SendSMS
