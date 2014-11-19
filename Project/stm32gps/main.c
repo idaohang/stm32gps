@@ -46,6 +46,7 @@ typedef struct
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 #undef TEST_MACRO
+#define BKP_DR_NUMBER              42
 /* Private variables ---------------------------------------------------------*/
 __IO uint32_t LsiFreq = 40000;
 
@@ -67,7 +68,7 @@ uint16_t g_sequenceNum;  // packet's sequence
 uint16_t g_successNum;
 
 #if 1
-#define BKP_DR_NUMBER              42
+
 uint16_t BKPDataReg[BKP_DR_NUMBER] =
   {
     BKP_DR1, BKP_DR2, BKP_DR3, BKP_DR4, BKP_DR5, BKP_DR6, BKP_DR7, BKP_DR8,
@@ -85,10 +86,9 @@ void loadLoginMsg(uint8_t *imei, uint16_t sequence);
 void PackLoginMsg(void);
 void LoadGpsMsg(uint16_t sequence);
 void PackGpsMsg(void);
+void PackAlarmMsg(void);
 /* Private functions ---------------------------------------------------------*/
 
-
-ST_NETWORKCONFIG stNetCfg;
 
 void ShowLoginMsg(void)
 {
@@ -171,6 +171,13 @@ int main(void)
 	uint8_t rst = GPS_FAIL;
     ST_GPSRMCINFO rmc;
 	unsigned char errNum = 0;
+	uint16_t removeNum = 0;
+	uint16_t sendLen = 0;
+
+	// Used for get GPRS Data
+	char *pRecvBuf = NULL;
+    uint32_t recvLen = 0;
+	char *pfeed = NULL;
 
 	/////////////////////////////////////////////////////////////////
 	// Configure the GPIO ports and Power OFF GPS and GSM
@@ -214,6 +221,23 @@ int main(void)
 	TIM2_NVIC_Configuration();
 
 	/////////////////////////////////////////////////////////////////
+	// Init BKP Register when PowerOn Reset
+	/////////////////////////////////////////////////////////////////
+#if 1
+	/* Check if the Power On Reset flag is set */
+	if(RCC_GetFlagStatus(RCC_FLAG_PORRST) != RESET)
+	{
+		/* Clear reset flags */
+		RCC_ClearFlag();
+		// Write BKP register
+		BKP_WriteBackupRegister(BKPDataReg[BKP_SLEEP_TIME], (uint16_t)(SLEEP_NORMAL_SEC));
+		BKP_WriteBackupRegister(BKPDataReg[BKP_REMOVE_FLAG], (uint16_t)(BKP_FALSE));
+		BKP_WriteBackupRegister(BKPDataReg[BKP_REMOVE_YES], 0);
+		BKP_WriteBackupRegister(BKPDataReg[BKP_REMOVE_NOT], 0);
+	}
+#endif
+
+	/////////////////////////////////////////////////////////////////
 	// Configure LED and USART(GPS + GSM + DEBUG)
 	/////////////////////////////////////////////////////////////////
     stm32gps_led_cfg();
@@ -231,12 +255,53 @@ int main(void)
 	// Tuen On TIMER
 	/////////////////////////////////////////////////////////////////
 	TIM2_Start();
+	
 	/////////////////////////////////////////////////////////////////
 	// Init Variables
 	/////////////////////////////////////////////////////////////////
 	InitVariables();
-// for jtag debug should delete
-//delay_10ms(500);
+	
+	/////////////////////////////////////////////////////////////////
+	// Check Remove Action
+	/////////////////////////////////////////////////////////////////
+#if 1
+	// set remove flag
+	if(BKP_FALSE == BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_FLAG]) 
+		&& (BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_NOT]) > CHECK_REMOVE_TIMES))
+	{
+		BKP_WriteBackupRegister(BKPDataReg[BKP_REMOVE_FLAG], (uint16_t)(BKP_TRUE));
+	}
+
+	// reset remove flag
+	if(BKP_TRUE == BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_FLAG]) 
+		&& (BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_YES]) > CHECK_REMOVE_TIMES))
+	{
+		BKP_WriteBackupRegister(BKPDataReg[BKP_REMOVE_FLAG], (uint16_t)(BKP_FALSE));
+	}
+	
+	// have removed
+	if((uint8_t)Bit_SET == getRemovalFlag())
+	{
+		removeNum = BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_YES]);
+		printf("remove YES num = %d\n", removeNum);
+		removeNum++;
+		BKP_WriteBackupRegister(BKPDataReg[BKP_REMOVE_YES], removeNum);
+		BKP_WriteBackupRegister(BKPDataReg[BKP_REMOVE_NOT], 0);
+	}
+	
+	// not removed
+	if((uint8_t)Bit_RESET == getRemovalFlag()) 
+	{
+		removeNum= BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_NOT]);
+		printf("NOT removalnum = %d\n", removeNum);
+		removeNum++;
+		BKP_WriteBackupRegister(BKPDataReg[BKP_REMOVE_NOT], removeNum);
+		BKP_WriteBackupRegister(BKPDataReg[BKP_REMOVE_YES], 0);
+	}
+	
+#endif
+
+
 	/////////////////////////////////////////////////////////////////
 	// First Power ON GPS
 	/////////////////////////////////////////////////////////////////
@@ -283,7 +348,7 @@ int main(void)
 	    while(RTC_GetFlagStatus(RTC_FLAG_SEC) == RESET);
 
 	    /* Alarm in 10 second */
-	    RTC_SetAlarm(RTC_GetCounter()+ 10);
+	    RTC_SetAlarm(RTC_GetCounter()+ STOP_GPS_SEC);
 	    /* Wait until last write operation on RTC registers has finished */
 	    RTC_WaitForLastTask();
 		
@@ -317,10 +382,10 @@ int main(void)
 		// While loop to check sim card status
 		/////////////////////////////////////////////////////////////////
 		GSM_CheckSIMCard();
-		#ifdef USE_DEBUG
+#ifdef USE_DEBUG
 		//GetGsmData(&g_simData, g_imsiInfo);
 		GSM_test();
-		#endif
+#endif
 		/////////////////////////////////////////////////////////////////
 		// While loop to check network registration status
 		/////////////////////////////////////////////////////////////////
@@ -366,11 +431,19 @@ int main(void)
 		/////////////////////////////////////////////////////////////////
 		// While loop to Send LOGIN Message
 		/////////////////////////////////////////////////////////////////
-		while(USART_SUCESS != GPRS_SendData(loginBuf, EELINK_LOGIN_MSGLEN))
+		while(USART_SUCESS != GPRS_SendData_rsp(loginBuf, EELINK_LOGIN_MSGLEN, &pRecvBuf, &recvLen))
 		{
 			STM_EVAL_LEDToggle(LED1);
 			printf("GPRS_SendData LOGIN MSG Fail\n");
 		}
+
+		// parse response data
+		pfeed = strstr_len(pRecvBuf, "gg", recvLen);
+		if(pfeed != NULL)
+		{
+			printf("\r\n 2= 0x%x-", *(pfeed+2));
+		}
+		printf("\r\n");
 
 		/////////////////////////////////////////////////////////////////
 		// Query SIM IMSI and Analyze
@@ -406,12 +479,24 @@ int main(void)
 			/////////////////////////////////////////////////////////////////
 			GetGsmData(&g_simData, g_imsiInfo);
 			LoadGpsMsg(g_sequenceNum);
-			PackGpsMsg();
+
+			// remove alarm
+			if((BKP_TRUE == BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_FLAG]))
+				&&(BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_YES]) > 0))
+			{
+				PackAlarmMsg();
+				sendLen = EELINK_ALARM_MSGLEN;
+			}
+			else
+			{
+				PackGpsMsg();
+				sendLen = EELINK_GPS_MSGLEN;
+			}
 
 			/////////////////////////////////////////////////////////////////
 			// Send GPS Message, 
 			/////////////////////////////////////////////////////////////////
-			if(USART_FAIL == GPRS_SendData(gpsBuf, EELINK_GPS_MSGLEN))
+			if(USART_FAIL == GPRS_SendData(gpsBuf, sendLen))
 			{
 				STM_EVAL_LEDToggle(LED1);
 				errNum++;
@@ -473,8 +558,19 @@ int main(void)
 	RTC_ClearFlag(RTC_FLAG_SEC);
 	while(RTC_GetFlagStatus(RTC_FLAG_SEC) == RESET);
 
-	/* Set the RTC Alarm after xx s */
-	RTC_SetAlarm(RTC_GetCounter()+ SLEEP_NORMAL_SEC);
+	// normal working state
+	if((BKP_TRUE == BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_FLAG])) 
+		&& (BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_NOT] > 0)))
+	{
+printf("normal working state\n");
+		/* Set the RTC Alarm after xx s */
+		RTC_SetAlarm(RTC_GetCounter()+ BKP_ReadBackupRegister(BKPDataReg[BKP_SLEEP_TIME]));
+	}
+	else
+	{
+printf("sleep working state\n");
+		RTC_SetAlarm(RTC_GetCounter()+ SLEEP_NORMAL_SEC);
+	}
 	/* Wait until last write operation on RTC registers has finished */
 	RTC_WaitForLastTask();
 
@@ -734,6 +830,65 @@ void PackGpsMsg(void)
 	if(offset != (EELINK_GPS_MSGLEN))
 	{
 		printf("PackGpsMsg ERROR!\n");
+	}
+}
+
+void PackAlarmMsg(void)
+{
+	uint32_t i;
+	uint32_t offset = 0;
+	offset = 0;
+	for(i = 0; i < 2; i++)
+	{
+		gpsBuf[offset] = gpsMsg.hdr.header[i];
+		offset++;
+	}
+	gpsBuf[offset] = gpsMsg.hdr.type;
+	offset++;
+	for(i = 0; i < 2; i++)
+	{
+		gpsBuf[offset] = gpsMsg.hdr.len[i];
+		offset++;
+	}
+	for(i = 0; i < 2; i++)
+	{
+		gpsBuf[offset] = gpsMsg.hdr.seq[i];
+		offset++;
+	}
+	for(i = 0; i < 4; i++)
+	{
+		gpsBuf[offset] = gpsMsg.utctime[i];
+		offset++;
+	}
+	for(i = 0; i < 4; i++)
+	{
+		gpsBuf[offset] = gpsMsg.lati[i];
+		offset++;
+	}
+	for(i = 0; i < 4; i++)
+	{
+		gpsBuf[offset] = gpsMsg.longi[i];
+		offset++;
+	}
+	gpsBuf[offset] = gpsMsg.speed;
+	offset++;
+	for(i = 0; i < 2; i++)
+	{
+		gpsBuf[offset] = gpsMsg.course[i];
+		offset++;
+	}
+	for(i = 0; i < 9; i++)
+	{
+		gpsBuf[offset] = gpsMsg.basestation[i];
+		offset++;
+	}
+	gpsBuf[offset] = gpsMsg.gps_valid;
+	offset++;
+	gpsBuf[offset] = 0x71;  // remove alarm flag
+	
+	if(offset != (EELINK_ALARM_MSGLEN))
+	{
+		printf("PackAlarmMsg ERROR!\n");
 	}
 }
 

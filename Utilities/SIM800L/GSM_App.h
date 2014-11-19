@@ -91,6 +91,7 @@ extern volatile unsigned char SMSingRing;
 
 
 char *strstr_len(char *str, char *subStr, uint32_t strlenth);
+char *strstrlen_len(char *str, char *subStr, uint32_t strlenth, uint32_t *len);
 char *strnchr(char *S, int C, int n);
 unsigned char GSM_ChkRingSta(void);
 void GSM_PowerOn(void);
