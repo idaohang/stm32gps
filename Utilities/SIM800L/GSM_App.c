@@ -653,7 +653,6 @@ unsigned char GSM_QueryImei(uint8_t *pImei)
  *********************************************************************************************************/
 unsigned char GSM_QueryImsiBuf(uint8_t *pImsi)
 {
-	uint32_t i;
     unsigned int cmdLen;
     static char *pfeed = NULL;
 	char *pRecvBuf = NULL;

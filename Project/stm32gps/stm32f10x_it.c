@@ -271,8 +271,8 @@ void TIM2_IRQHandler(void)
 		if(BKP_TRUE == BKP_ReadBackupRegister(BKP_DR1))
 		{
 			/* Set the RTC Alarm after xx s */
-			DEBUG("in timer2 bkptrue %d\n", BKP_ReadBackupRegister(BKP_DR4));
-			RTC_SetAlarm(RTC_GetCounter()+ (BKP_ReadBackupRegister(BKP_DR4)/SLEEP_TIM2_RATIO));
+			DEBUG("in timer2 bkptrue %d\n", (BKP_ReadBackupRegister(BKP_DR4) + BKP_ReadBackupRegister(BKP_DR4) <<16));
+			RTC_SetAlarm(RTC_GetCounter()+ ((BKP_ReadBackupRegister(BKP_DR4) + BKP_ReadBackupRegister(BKP_DR4) <<16)/SLEEP_TIM2_RATIO));
 		}
 		else
 		{

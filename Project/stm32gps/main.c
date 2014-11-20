@@ -57,7 +57,7 @@ uint8_t g_phoneNum[PHONE_NUMBER_LEN];
 EELINK_SIM_PACKET_LOGIN loginMsg;
 char loginBuf[PROTO_LOGIN_BUF];
 EELINK_PACKET_GPS gpsMsg;
-char gpsBuf[PROTO_GPS_BUF];
+static char gpsBuf[PROTO_GPS_BUF];
 
 ST_SIMDATA g_simData;
 ST_GPSDATA g_gpsData;
@@ -147,7 +147,11 @@ void InitVariables(void)
 	}
 
 	memset(g_IMSIBuf, IMSI_INFO_LEN, 0);
-	memset(g_phoneNum, PHONE_NUMBER_LEN, 0);
+	
+	for(i = 0; i < PHONE_NUMBER_LEN; i++)
+	{
+		g_phoneNum[i] = 0x30;
+	}
 
 	memset(&loginMsg, sizeof(loginMsg), 0);
 	memset(&gpsMsg, sizeof(gpsMsg), 0);
@@ -241,7 +245,8 @@ int main(void)
 		/* Clear reset flags */
 		RCC_ClearFlag();
 		// Write BKP register Init BKP register
-		BKP_WriteBackupRegister(BKPDataReg[BKP_SLEEP_TIME], (uint16_t)(SLEEP_NORMAL_SEC));
+		BKP_WriteBackupRegister(BKPDataReg[BKP_SLEEP_TIME_LOW], (uint16_t)((SLEEP_NORMAL_SEC)&0xFFFF));
+		BKP_WriteBackupRegister(BKPDataReg[BKP_SLEEP_TIME_HIGH], (uint16_t)(((SLEEP_NORMAL_SEC)>>16)&0xFFFF));
 		BKP_WriteBackupRegister(BKPDataReg[BKP_REMOVE_FLAG], (uint16_t)(BKP_FALSE));
 		BKP_WriteBackupRegister(BKPDataReg[BKP_REMOVE_YES], 0);
 		BKP_WriteBackupRegister(BKPDataReg[BKP_REMOVE_NOT], 0);
@@ -355,7 +360,7 @@ int main(void)
 			gpsRecvTimes = 0;
 			break;
 		}
-
+#ifndef FACTORY_ENABLE_MACRO
 		/////////////////////////////////////////////////////////////////
 		// Set RTC Alarm to wake from STOP mode
 		/////////////////////////////////////////////////////////////////
@@ -377,6 +382,7 @@ int main(void)
 		/* Configures system clock after wake-up from STOP: enable HSE, PLL and select 
        		PLL as system clock source (HSE and PLL are disabled in STOP mode) */
     	SYSCLKConfig_STOP();
+#endif
 	}
 	
 	/////////////////////////////////////////////////////////////////
@@ -458,15 +464,19 @@ int main(void)
 #endif // DBG_ENABLE_MACRO
 		}
 
-		/*
+#ifdef 1
 		// parse response data
-		pfeed = strstr_len(pRecvBuf, "gg", recvLen);
+		pfeed = strstr_len(pRecvBuf, "pp", recvLen);
 		if(pfeed != NULL)
 		{
 			printf("\r\n 2= 0x%x-", *(pfeed+2));
+			printf("\r\n 7= 0x%x-", *(pfeed+7));
+			printf("\r\n 8= 0x%x-", *(pfeed+8));
+			printf("\r\n 9= 0x%x-", *(pfeed+9));
+			printf("\r\n 10= 0x%x-", *(pfeed+10));
 		}
 		printf("\r\n");
-		*/
+#endif
 		
 #endif // FACTORY_ENABLE_MACRO
 		/////////////////////////////////////////////////////////////////
@@ -508,7 +518,7 @@ int main(void)
 			LoadGpsMsg(g_sequenceNum);
 #ifdef FACTORY_ENABLE_MACRO
 			while(USART_SUCESS != GSM_QueryImsiBuf(g_IMSIBuf));
-			GSM_QueryNumber(g_phoneNum);
+			//GSM_QueryNumber(g_phoneNum);
 			PackFactoryMsg();
 			sendLen = FACTORY_REPORT_MSGLEN;
 #else
@@ -597,7 +607,9 @@ int main(void)
 	if(BKP_TRUE == BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_FLAG]))
 	{
 		/* Set the RTC Alarm after xx s */
-		RTC_SetAlarm(RTC_GetCounter()+ BKP_ReadBackupRegister(BKPDataReg[BKP_SLEEP_TIME]));
+		RTC_SetAlarm(RTC_GetCounter()+ (uint32_t)(BKP_ReadBackupRegister(BKPDataReg[BKP_SLEEP_TIME_LOW]) 
+										+ ((uint32_t)BKP_ReadBackupRegister(BKPDataReg[BKP_SLEEP_TIME_HIGH]) << 16)));
+		printf(" normal working rtc value is %d\n", (uint32_t)(BKP_ReadBackupRegister(BKPDataReg[BKP_SLEEP_TIME_LOW]) + ((uint32_t)BKP_ReadBackupRegister(BKPDataReg[BKP_SLEEP_TIME_HIGH]) << 16)));
 	}
 	else
 	{
@@ -944,7 +956,7 @@ void PackAlarmMsg(void)
   */
 void PackFactoryMsg(void)
 {
-	uint32_t i;
+	uint32_t i = 0;
 	uint32_t offset = 0;
 	offset = 0;
 	for(i = 0; i < 2; i++)
@@ -1006,20 +1018,20 @@ void PackFactoryMsg(void)
 		gpsBuf[offset] = gpsMsg.signal_strength[i];
 		offset++;
 	}
-	for(i = 0; i < 8; i++)
+	for(i = 0; i < IMEI_INFO_LEN; i++)
 	{
-		loginBuf[offset] = loginMsg.imei[i];
+		gpsBuf[offset] = imeiBuf[i];
 		offset++;
 	}
 
 	for(i = 0; i < IMSI_INFO_LEN; i++)
 	{
-		loginBuf[offset] = g_IMSIBuf[i];
+		gpsBuf[offset] = g_IMSIBuf[i];
 		offset++;
 	}
 	for(i = 0; i < PHONE_NUMBER_LEN; i++)
 	{
-		loginBuf[offset] = g_phoneNum[i];
+		gpsBuf[offset] = g_phoneNum[i];
 		offset++;
 	}
 	gpsBuf[offset] = g_gpsStatus;  // gps status

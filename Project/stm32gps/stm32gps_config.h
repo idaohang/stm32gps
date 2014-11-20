@@ -42,7 +42,7 @@
 
 // RTC Alarm Second [1 - 2^32]
 #define SLEEP_TIM2_RATIO  6  // TIM2 sleep time is SLEEP_NORMAL / 6
-#define SLEEP_NORMAL_SEC 240 // 2min // 86400 // 24hour SHOULD SET 86400 = 24hour
+#define SLEEP_NORMAL_SEC 60//240 // 2min // 86400 // 24hour SHOULD SET 86400 = 24hour
 #define STOP_GPS_SEC     10  // GPS STOP mode seconds
 
 #define AT_RESEND_TIMES  10  // x*100ms, AT Command Resend times
@@ -52,12 +52,12 @@
 #define GSM_SERVER_PORT "6666"           		// server port
 
 #define GSM_FACTORY_IP   "lkf.broadnetwork.net"  // factory test server name
-#define GSM_FACTORY_PORT "6666"           		// factory test server port
+#define GSM_FACTORY_PORT "6666"            		// factory test server port
 
 #define EELINK_LOGIN_MSGLEN  17		// login length
 #define EELINK_GPS_MSGLEN    42     // GPS length
 #define EELINK_ALARM_MSGLEN  33     // alarm length
-#define FACTORY_REPORT_MSGLEN 79    // factory test length
+#define FACTORY_REPORT_MSGLEN 86    // factory test length
 
 #define EELINK_LANG  0x01  			// English
 #define EELINK_ZONE  0x20  			// east 8
@@ -112,7 +112,8 @@ typedef enum
   BKP_REMOVE_FLAG = 0,
   BKP_REMOVE_NOT = 1,
   BKP_REMOVE_YES = 2,
-  BKP_SLEEP_TIME = 3
+  BKP_SLEEP_TIME_LOW = 3,
+  BKP_SLEEP_TIME_HIGH = 4
 } REMOVE_TypeDef;
 
 

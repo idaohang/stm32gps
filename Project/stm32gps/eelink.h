@@ -21,7 +21,7 @@
 #define PHONE_NUMBER_LEN 15          // phone number buffer length
 #define GSMBASESTATION_INFO_LEN 9
 
-#define PROTO_FACTORY_HEADER 0x72    // factory test header
+#define PROTO_FACTORY_HEADER   0x72    // factory test header
 
 
 typedef enum protoEelinkPacketType
