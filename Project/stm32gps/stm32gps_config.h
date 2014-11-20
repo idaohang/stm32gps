@@ -57,7 +57,7 @@
 #define EELINK_LOGIN_MSGLEN  17		// login length
 #define EELINK_GPS_MSGLEN    42     // GPS length
 #define EELINK_ALARM_MSGLEN  33     // alarm length
-#define FACTORY_REPORT_MSGLEN 64    // factory test length
+#define FACTORY_REPORT_MSGLEN 79    // factory test length
 
 #define EELINK_LANG  0x01  			// English
 #define EELINK_ZONE  0x20  			// east 8

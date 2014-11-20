@@ -726,7 +726,7 @@ void LoadGpsMsg(uint16_t sequence)
 	gpsMsg.hdr.header[1] = PROTO_EELINK_HEADER;
 	gpsMsg.hdr.type = PACKET_EELINK_GPS;
 	gpsMsg.hdr.len[0] = 0x00;
-	gpsMsg.hdr.len[1] = 0x25;  // 37
+	gpsMsg.hdr.len[1] = (EELINK_GPS_MSGLEN - 5);  // 37
 	gpsMsg.hdr.seq[0] = (uint8_t)((sequence >> 8)& 0x00FF);
 	gpsMsg.hdr.seq[1] = (uint8_t)((sequence)& 0x00FF);
 
@@ -892,7 +892,7 @@ void PackAlarmMsg(void)
 	offset++;
 	gpsBuf[offset] = 0; // header len
 	offset++;
-	gpsBuf[offset] = 28; // header len
+	gpsBuf[offset] = (EELINK_ALARM_MSGLEN - 5); // header len
 	offset++;
 	for(i = 0; i < 2; i++)
 	{
@@ -956,7 +956,7 @@ void PackFactoryMsg(void)
 	offset++;
 	gpsBuf[offset] = 0; // header len
 	offset++;
-	gpsBuf[offset] = 59; // header len
+	gpsBuf[offset] = (FACTORY_REPORT_MSGLEN - 5); // header len
 	offset++;
 	for(i = 0; i < 2; i++)
 	{
@@ -1012,9 +1012,14 @@ void PackFactoryMsg(void)
 		offset++;
 	}
 
-	for(i = 0; i < PHONE_NUMBER_LEN; i++)
+	for(i = 0; i < IMSI_INFO_LEN; i++)
 	{
 		loginBuf[offset] = g_IMSIBuf[i];
+		offset++;
+	}
+	for(i = 0; i < PHONE_NUMBER_LEN; i++)
+	{
+		loginBuf[offset] = g_phoneNum[i];
 		offset++;
 	}
 	gpsBuf[offset] = g_gpsStatus;  // gps status
