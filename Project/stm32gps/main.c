@@ -50,6 +50,8 @@ __IO uint32_t LsiFreq = 40000;
 
 // imei information buffer
 uint8_t imeiBuf[IMEI_INFO_LEN];
+uint8_t g_IMSIBuf[IMSI_INFO_LEN];
+uint8_t g_phoneNum[PHONE_NUMBER_LEN];
 
 // packet message
 EELINK_SIM_PACKET_LOGIN loginMsg;
@@ -64,6 +66,8 @@ ST_IMSIINFO g_imsiInfo;
 
 uint16_t g_sequenceNum;  // GPRS packet's sequence number
 uint16_t g_successNum;   // GPRS Send Success number
+
+uint8_t g_gpsStatus;    // GPS status 0x55 - error; 0xaa - ok
 
 // Backup Data Register
 uint16_t BKPDataReg[BKP_DR_NUMBER] =
@@ -83,6 +87,7 @@ void PackLoginMsg(void);
 void LoadGpsMsg(uint16_t sequence);
 void PackGpsMsg(void);
 void PackAlarmMsg(void);
+void PackFactoryMsg(void);
 /* Private functions ---------------------------------------------------------*/
 
 #ifdef DBG_ENABLE_MACRO
@@ -116,7 +121,7 @@ void ShowGpsMsg(void)
 	}
 	printf("\r\n");
 }
-#endif
+#endif // DBG_ENABLE_MACRO
 
 /**
   * @brief  Init Global Variables
@@ -129,8 +134,9 @@ void InitVariables(void)
 	
 	g_sequenceNum = 1;
 	g_successNum = 0;
+	g_gpsStatus = 0x55;
 	
-	memset(imeiBuf, sizeof(imeiBuf), 0);
+	memset(imeiBuf, IMEI_INFO_LEN, 0);
 	for(i = 0; i < PROTO_LOGIN_BUF; i++)
 	{
 		loginBuf[i] = 0;
@@ -139,6 +145,9 @@ void InitVariables(void)
 	{
 		gpsBuf[i] = 0;
 	}
+
+	memset(g_IMSIBuf, IMSI_INFO_LEN, 0);
+	memset(g_phoneNum, PHONE_NUMBER_LEN, 0);
 
 	memset(&loginMsg, sizeof(loginMsg), 0);
 	memset(&gpsMsg, sizeof(gpsMsg), 0);
@@ -178,14 +187,14 @@ int main(void)
     uint32_t recvLen = 0;      // GPRS Received length
 	char *pfeed = NULL;        // Used for parse
 
-/////////////////////////////////////////////////////////////////
-// Configure the GPIO ports and Power OFF GPS and GSM
-/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
+	// Configure the GPIO ports and Power OFF GPS and GSM
+	/////////////////////////////////////////////////////////////////
 	MX_GPIO_Init();
 #ifdef USE_STM32_GPS_BOARD_VB
 	GPSPowerOff();
 	GSM_PowerOff();
-#endif
+#endif // USE_STM32_GPS_BOARD_VB
 	/////////////////////////////////////////////////////////////////
 	// Configure the SysTick
 	/////////////////////////////////////////////////////////////////
@@ -246,7 +255,7 @@ int main(void)
 	STM_EVAL_LEDOff(LED1);
 
     stm32gps_com_debug_cfg();
-#endif
+#endif // DBG_ENABLE_MACRO
 
     usart_init(STM32_SIM908_GPS_COM);
     stm32gps_com_gps_cfg();
@@ -314,25 +323,28 @@ int main(void)
 		rst = GPSInfoAnalyze(&rmc);
 		if( GPS_SUCCESS == rst)
 		{
+			g_gpsStatus = 0xAA;
 #ifdef DBG_ENABLE_MACRO
 			STM_EVAL_LEDOff(LED1);
 			DEBUG("GPS Recv Success!\n");
-#endif
+#endif // DBG_ENABLE_MACRO
 			break;
 		}
 		else if(GPS_INVALID == rst)
 		{
+			g_gpsStatus = 0xAA;
 #ifdef DBG_ENABLE_MACRO
 			STM_EVAL_LEDOn(LED1);
 			DEBUG("GPS Recv Invalid\n");
-#endif
+#endif // DBG_ENABLE_MACRO
 		}
 		else
 		{
+			g_gpsStatus = 0x55;
 #ifdef DBG_ENABLE_MACRO
 			STM_EVAL_LEDOn(LED1);
 			DEBUG("GPS Recv Error\n");
-#endif
+#endif // DBG_ENABLE_MACRO
 		}
 		/////////////////////////////////////////////////////////////////
 		// If GPS Receive Times Over then break, ~30sec
@@ -432,8 +444,9 @@ int main(void)
 		/////////////////////////////////////////////////////////////////
 		while(USART_SUCESS != GSM_QueryImei(imeiBuf));
 		loadLoginMsg(imeiBuf, g_sequenceNum);
+#ifndef FACTORY_ENABLE_MACRO
 		PackLoginMsg();
-
+		g_sequenceNum++;
 		/////////////////////////////////////////////////////////////////
 		// While loop to Send LOGIN Message
 		/////////////////////////////////////////////////////////////////
@@ -442,8 +455,9 @@ int main(void)
 #ifdef DBG_ENABLE_MACRO
 			STM_EVAL_LEDToggle(LED1);
 			DEBUG("GPRS_SendData LOGIN MSG Fail\n");
-#endif
+#endif // DBG_ENABLE_MACRO
 		}
+
 		/*
 		// parse response data
 		pfeed = strstr_len(pRecvBuf, "gg", recvLen);
@@ -453,6 +467,8 @@ int main(void)
 		}
 		printf("\r\n");
 		*/
+		
+#endif // FACTORY_ENABLE_MACRO
 		/////////////////////////////////////////////////////////////////
 		// Query SIM IMSI and Analyze
 		/////////////////////////////////////////////////////////////////
@@ -469,14 +485,17 @@ int main(void)
 			rst = GPSInfoAnalyze(&rmc);
 			if( GPS_SUCCESS == rst)
 			{
+				g_gpsStatus = 0xAA;
 				DEBUG("GPS Recv Success!\n");
 			}
 			else if(GPS_INVALID == rst)
 			{
+				g_gpsStatus = 0xAA;
 				DEBUG("GPS Recv Invalid\n");
 			}
 			else
 			{
+				g_gpsStatus = 0x55;
 				memset(&rmc, sizeof(rmc), 0);
 				DEBUG("GPS Recv Error\n");
 			}
@@ -487,7 +506,12 @@ int main(void)
 			/////////////////////////////////////////////////////////////////
 			GetGsmData(&g_simData, g_imsiInfo);
 			LoadGpsMsg(g_sequenceNum);
-
+#ifdef FACTORY_ENABLE_MACRO
+			while(USART_SUCESS != GSM_QueryImsiBuf(g_IMSIBuf));
+			GSM_QueryNumber(g_phoneNum);
+			PackFactoryMsg();
+			sendLen = FACTORY_REPORT_MSGLEN;
+#else
 			// detect remove and alarm
 			if((BKP_TRUE == BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_FLAG]))
 				&&((BKP_ReadBackupRegister(BKPDataReg[BKP_REMOVE_YES]) > 0)))
@@ -500,15 +524,15 @@ int main(void)
 				PackGpsMsg();
 				sendLen = EELINK_GPS_MSGLEN;
 			}
-
+#endif // FACTORY_ENABLE_MACRO
 			/////////////////////////////////////////////////////////////////
-			// Send GPS Message, 
+			// Send GPS Message or ALARM or FACTORY TEST Message 
 			/////////////////////////////////////////////////////////////////
 			if(USART_FAIL == GPRS_SendData(gpsBuf, sendLen))
 			{
 #ifdef DBG_ENABLE_MACRO
 				STM_EVAL_LEDToggle(LED1);
-#endif
+#endif // DBG_ENABLE_MACRO
 				errNum++;
 				if(errNum > GSM_RETERY_TIMES)
 				{
@@ -533,7 +557,7 @@ int main(void)
 			}
 #ifdef DBG_ENABLE_MACRO
 		ShowGpsMsg();
-#endif
+#endif // DBG_ENABLE_MACRO
 
 			// Increase sequence number if overflow then re-init to 1
 			g_sequenceNum++;
@@ -553,9 +577,9 @@ int main(void)
 		}
 	}
 	
-	/////////////////////////////////////////////////////////////////
-	// This Process is Finished, Then goto sleep
-	/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+// This Process is Finished, Then goto sleep
+/////////////////////////////////////////////////////////////////
 
 	/////////////////////////////////////////////////////////////////
 	// Power OFF GPS and GSM before go into standby mode
@@ -564,7 +588,7 @@ int main(void)
 #ifdef USE_STM32_GPS_BOARD_VB
 	GPSPowerOff();
 	GSM_PowerOff();
-#endif
+#endif // USE_STM32_GPS_BOARD_VB
 	/* Wait till RTC Second event occurs */
 	RTC_ClearFlag(RTC_FLAG_SEC);
 	while(RTC_GetFlagStatus(RTC_FLAG_SEC) == RESET);
@@ -592,7 +616,7 @@ int main(void)
 	{
 #ifndef DBG_ENABLE_MACRO
 		STM_EVAL_LEDToggle(LED1);
-#endif
+#endif // DBG_ENABLE_MACRO
 		delay_10ms(100);
 	}
 
@@ -864,13 +888,12 @@ void PackAlarmMsg(void)
 		gpsBuf[offset] = gpsMsg.hdr.header[i];
 		offset++;
 	}
-	gpsBuf[offset] = gpsMsg.hdr.type;
+	gpsBuf[offset] = PACKET_EELINK_WARNING; //gpsMsg.hdr.type;
 	offset++;
-	for(i = 0; i < 2; i++)
-	{
-		gpsBuf[offset] = gpsMsg.hdr.len[i];
-		offset++;
-	}
+	gpsBuf[offset] = 0; // header len
+	offset++;
+	gpsBuf[offset] = 28; // header len
+	offset++;
 	for(i = 0; i < 2; i++)
 	{
 		gpsBuf[offset] = gpsMsg.hdr.seq[i];
@@ -911,6 +934,99 @@ void PackAlarmMsg(void)
 	if(offset != (EELINK_ALARM_MSGLEN))
 	{
 		printf("PackAlarmMsg ERROR!\n");
+	}
+}
+
+/**
+  * @brief  Load gpsMsg and loginMsg structure to factory send buffer
+  * @param  None
+  * @retval None
+  */
+void PackFactoryMsg(void)
+{
+	uint32_t i;
+	uint32_t offset = 0;
+	offset = 0;
+	for(i = 0; i < 2; i++)
+	{
+		gpsBuf[offset] = PROTO_FACTORY_HEADER;
+		offset++;
+	}
+	gpsBuf[offset] = PACKET_FACTORY_REPORT;  // header type
+	offset++;
+	gpsBuf[offset] = 0; // header len
+	offset++;
+	gpsBuf[offset] = 59; // header len
+	offset++;
+	for(i = 0; i < 2; i++)
+	{
+		gpsBuf[offset] = gpsMsg.hdr.seq[i];
+		offset++;
+	}
+	for(i = 0; i < 4; i++)
+	{
+		gpsBuf[offset] = gpsMsg.utctime[i];
+		offset++;
+	}
+	for(i = 0; i < 4; i++)
+	{
+		gpsBuf[offset] = gpsMsg.lati[i];
+		offset++;
+	}
+	for(i = 0; i < 4; i++)
+	{
+		gpsBuf[offset] = gpsMsg.longi[i];
+		offset++;
+	}
+	gpsBuf[offset] = gpsMsg.speed;
+	offset++;
+	for(i = 0; i < 2; i++)
+	{
+		gpsBuf[offset] = gpsMsg.course[i];
+		offset++;
+	}
+	for(i = 0; i < 9; i++)
+	{
+		gpsBuf[offset] = gpsMsg.basestation[i];
+		offset++;
+	}
+	gpsBuf[offset] = gpsMsg.gps_valid;
+	offset++;
+	gpsBuf[offset] = 0;  // device status
+	offset++;
+	gpsBuf[offset] = getRemovalFlag();  // device status
+	offset++;
+	for(i = 0; i < 2; i++)
+	{
+		gpsBuf[offset] = gpsMsg.battery_voltage[i];
+		offset++;
+	}
+	for(i = 0; i < 2; i++)
+	{
+		gpsBuf[offset] = gpsMsg.signal_strength[i];
+		offset++;
+	}
+	for(i = 0; i < 8; i++)
+	{
+		loginBuf[offset] = loginMsg.imei[i];
+		offset++;
+	}
+
+	for(i = 0; i < PHONE_NUMBER_LEN; i++)
+	{
+		loginBuf[offset] = g_IMSIBuf[i];
+		offset++;
+	}
+	gpsBuf[offset] = g_gpsStatus;  // gps status
+	offset++;
+	gpsBuf[offset] = 0x01;  // software version v1.0
+	offset++;
+	gpsBuf[offset] = 0x00;
+	offset++;
+	
+	if(offset != (FACTORY_REPORT_MSGLEN))
+	{
+		printf("PackFactoryMsg ERROR!\n");
 	}
 }
 

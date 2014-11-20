@@ -645,6 +645,42 @@ unsigned char GSM_QueryImei(uint8_t *pImei)
 }
 
 /*********************************************************************************************************
+ ** Function name:       GSM_QueryImsiBuf
+ ** Descriptions:        查询IMSI
+ ** input parameters:    NONE
+ ** output parameters:   pImsiInfo
+ ** Returned value:      返回状态结果
+ *********************************************************************************************************/
+unsigned char GSM_QueryImsiBuf(uint8_t *pImsi)
+{
+	uint32_t i;
+    unsigned int cmdLen;
+    static char *pfeed = NULL;
+	char *pRecvBuf = NULL;
+    uint32_t recvLen = 0;
+
+    cmdLen = strlen(AT_CIMI);
+    GSM_ClearBuffer();
+    if (USART_SUCESS == GSM_SendAT_rsp((char *)AT_CIMI, (char *)AT_OK, cmdLen, &pRecvBuf, &recvLen))
+    {
+		
+        pfeed = strdig_len(pRecvBuf, recvLen, 15);
+        if (pfeed == NULL)
+        {
+            return USART_FAIL;
+        }
+
+		if (pImsi != NULL)
+        {
+            memcpy(pImsi, pfeed, 15);
+        }
+		
+        return USART_SUCESS;
+    }
+    return USART_FAIL;
+}
+
+/*********************************************************************************************************
  ** Function name:       GSM_QueryImsi
  ** Descriptions:        查询IMSI
  ** input parameters:    NONE
@@ -831,14 +867,14 @@ unsigned char GSM_QueryBatVoltage(pST_BATVOLTAGESTATUS pSig)
 
 
 /**
-  * @brief  Request TA Serial Number Identification (IMEI)
-  * @param  pImei: pointer of IMEI
+  * @brief  Request Phone Number
+  * @param  pNum: pointer of number
   * @retval STATUS
   */
-//unsigned char GSM_QueryNumber(uint8_t *pNum)
-unsigned char GSM_QueryNumber(void)
+unsigned char GSM_QueryNumber(uint8_t *pNum)
 {
     unsigned int cmdLen;
+	char *pfeed = NULL;
 	char *pRecvBuf = NULL;
     uint32_t recvLen = 0;
 
@@ -846,7 +882,7 @@ unsigned char GSM_QueryNumber(void)
     GSM_ClearBuffer();
     if (USART_SUCESS == GSM_SendAT_rsp((char *)AT_CNUM, (char *)AT_OK, cmdLen, &pRecvBuf, &recvLen))
     {
-		
+		// Should Parse Number
 		
         return USART_SUCESS;
     }
@@ -1230,9 +1266,13 @@ void GSM_StartUpConnect(void)
     ST_NETWORKCONFIG stNetCfg;
 
 	sprintf(stNetCfg.TransferMode, "%s", "TCP");
+#ifdef FACTORY_ENABLE_MACRO
+	sprintf(stNetCfg.RemoteIP, "%s", GSM_FACTORY_IP);
+    sprintf(stNetCfg.RemotePort, "%s", GSM_FACTORY_PORT);
+#else
     sprintf(stNetCfg.RemoteIP, "%s", GSM_SERVER_IP);
-    sprintf(stNetCfg.RemotePort, GSM_SERVER_PORT);
-
+    sprintf(stNetCfg.RemotePort, "%s", GSM_SERVER_PORT);
+#endif // FACTORY_ENABLE_MACRO
     while (USART_SUCESS != GPRS_LinkServer(&stNetCfg));
 }
 

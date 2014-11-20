@@ -105,9 +105,10 @@ unsigned char GSM_SendAT_rsp(char *pCMD, char *pCMDBack,
 unsigned char GSM_QueryNetType(void);
 unsigned char GSM_QuerySignal(unsigned char *pSig);
 unsigned char GSM_QueryImei(uint8_t *pImei);
+unsigned char GSM_QueryImsiBuf(uint8_t *pImsi);
 unsigned char GSM_QueryImsi(pST_IMSIINFO pImsiInfo);
 unsigned char GSM_QueryCreg(pST_CREGINFO pCregInfo);
-unsigned char GSM_QueryNumber(void);
+unsigned char GSM_QueryNumber(uint8_t *pNum);
 
 unsigned char GSM_CallNumber(char *pNumber);
 unsigned char GSM_ReadNumberFromSIM(unsigned char No, ST_PHONEBOOKS *pNumber);
