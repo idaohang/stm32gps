@@ -185,6 +185,7 @@ int main(void)
 	unsigned char errNum = 0;  // GPRS send error number
 	uint16_t removeNum = 0;    // Remove detect counter
 	uint16_t sendLen = 0;      // GPRS send length (used for GPS and ALARM Msg)
+	uint32_t sleepSec = 0;
 
 	// Used for parse GPRS Received Data
 	char *pRecvBuf = NULL;     // GPRS Received buffer
@@ -465,17 +466,21 @@ int main(void)
 		}
 
 #ifdef 1
-		// parse response data
+		// parse response data, pp is 0x70 0x70
 		pfeed = strstr_len(pRecvBuf, "pp", recvLen);
 		if(pfeed != NULL)
 		{
-			printf("\r\n 2= 0x%x-", *(pfeed+2));
-			printf("\r\n 7= 0x%x-", *(pfeed+7));
-			printf("\r\n 8= 0x%x-", *(pfeed+8));
-			printf("\r\n 9= 0x%x-", *(pfeed+9));
-			printf("\r\n 10= 0x%x-", *(pfeed+10));
+			sleepSec = (uint32_t)(((*(pfeed + 7)) << 24)
+                                      + ((*(pfeed + 8)) << 16)
+                                      + ((*(pfeed + 9)) << 8)
+                                      + (*(pfeed + 10)));
+                // Check sleep time setting value
+                if((sleepSec > SLEEP_TIME_MIN) && (sleepSec < SLEEP_TIME_MAX))
+                {
+					BKP_WriteBackupRegister(BKPDataReg[BKP_SLEEP_TIME_LOW], (uint16_t)(sleepSec & 0xFFFF));
+					BKP_WriteBackupRegister(BKPDataReg[BKP_SLEEP_TIME_LOW], (uint16_t)((sleepSec>>16) & 0xFFFF));
+                }
 		}
-		printf("\r\n");
 #endif
 		
 #endif // FACTORY_ENABLE_MACRO

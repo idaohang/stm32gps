@@ -45,6 +45,9 @@
 #define SLEEP_NORMAL_SEC 60//240 // 2min // 86400 // 24hour SHOULD SET 86400 = 24hour
 #define STOP_GPS_SEC     10  // GPS STOP mode seconds
 
+#define SLEEP_TIME_MIN    120     // 2min
+#define SLEEP_TIME_MAX   172800  // 48hour
+
 #define AT_RESEND_TIMES  10  // x*100ms, AT Command Resend times
 
 // #define GSM_SERVER_IP   "121.40.200.84"  	// server ip address
